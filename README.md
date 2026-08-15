@@ -10,12 +10,15 @@ Status: stable `0.1.1`, published on PyPI with GitHub trusted publishing.
 pip install mediaruntime
 ```
 
-Set `MEDIARUNTIME_API_KEY`; the production API URL is built in.
+Set `MEDIARUNTIME_API_KEY`; the production API URL is built in. Pass the server-held key
+explicitly when you want the credential source to be visible in application code.
 
 ```python
+import os
+
 from mediaruntime import MediaRuntime
 
-media = MediaRuntime()
+media = MediaRuntime(api_key=os.environ["MEDIARUNTIME_API_KEY"])
 job = media.jobs.create(
     source="./video.mp4",
     outputs=[{"type": "mp4", "preset": "mp4_720p_h264_aac"}],
@@ -28,6 +31,9 @@ result = job.wait(timeout=300)
 moderation = media.jobs.get_moderation(result.id)
 print(result.bundle.get("download_url"), moderation.flagged_checks)
 ```
+
+`MediaRuntime()` without arguments is equivalent: it reads `MEDIARUNTIME_API_KEY`
+automatically. Never put the key in frontend code or commit its literal value.
 
 HTTP(S) and `gs://` sources are submitted directly. Other strings and `pathlib.Path`
 instances are treated as local files and uploaded through MediaRuntime's signed upload
