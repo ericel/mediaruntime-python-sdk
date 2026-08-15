@@ -1,3 +1,4 @@
+from ._version import VERSION as __version__
 from .client import MediaRuntime
 from .errors import (
     AuthenticationError,
@@ -61,4 +62,5 @@ __all__ = [
     "WebhookEvent",
     "WebhookVerificationError",
     "WebhooksClient",
+    "__version__",
 ]
