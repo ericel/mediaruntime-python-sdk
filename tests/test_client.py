@@ -39,7 +39,7 @@ def test_create_maps_source_and_preserves_metadata() -> None:
 
     assert job.id == "job_123"
     assert job.message == "ok"
-    assert __version__ == "0.1.1"
+    assert __version__ == "0.2.0"
     assert seen == {
         "url": "https://mediaruntime.com/v1/jobs",
         "api_key": "sdk_key",
@@ -49,6 +49,46 @@ def test_create_maps_source_and_preserves_metadata() -> None:
             "outputs": [{"type": "mp4", "preset": "mp4_720p_h264_aac"}],
             "metadata": {"keep_Snake_Case": {"nested-key": 7}},
         },
+    }
+
+
+def test_create_forwards_output_aliases_for_gateway_resolution() -> None:
+    seen: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["body"] = json.loads(request.content)
+        return response(
+            200,
+            {
+                "job_id": "job_alias",
+                "status": "QUEUED",
+                "required_tier": "standard",
+                "outputs": [
+                    {"alias": "video.web", "type": "mp4", "preset": "mp4_720p_h264_aac"},
+                    {
+                        "alias": "audio.transcription",
+                        "type": "audio",
+                        "preset": "audio_aac_128k",
+                    },
+                ],
+            },
+        )
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    job = media.jobs.create(
+        source="https://cdn.example.com/video.mp4",
+        outputs=["video.web", "audio.transcription"],
+    )
+
+    assert job.id == "job_alias"
+    assert job.required_tier == "standard"
+    assert job.outputs[0]["preset"] == "mp4_720p_h264_aac"
+    assert seen["body"] == {
+        "file_url": "https://cdn.example.com/video.mp4",
+        "outputs": ["video.web", "audio.transcription"],
     }
 
 
@@ -185,6 +225,13 @@ def test_capabilities_do_not_require_an_api_key() -> None:
                 "capabilities": {"jobs": "enabled"},
                 "output_types": {"mp4": ["mp4_720p_h264_aac"]},
                 "preset_overrides": {},
+                "output_aliases": {
+                    "video.web": {
+                        "type": "mp4",
+                        "preset": "mp4_720p_h264_aac",
+                        "tier": "standard",
+                    }
+                },
                 "notes": ["runtime source of truth"],
             },
         )
@@ -192,6 +239,7 @@ def test_capabilities_do_not_require_an_api_key() -> None:
     media = MediaRuntime(http_client=httpx.Client(transport=httpx.MockTransport(handler)))
     result = media.capabilities.retrieve()
     assert result.output_types["mp4"] == ["mp4_720p_h264_aac"]
+    assert result.output_aliases["video.web"]["preset"] == "mp4_720p_h264_aac"
 
 
 def test_job_id_is_encoded_as_one_path_segment() -> None:
