@@ -2,8 +2,8 @@
 
 Official synchronous Python client for the MediaRuntime asynchronous media API.
 
-Status: local implementation candidate. Publishing begins after repository ownership,
-PyPI ownership, and trusted publishing are configured.
+Status: `0.1.0` release candidate. Publishing begins after PyPI ownership and GitHub
+trusted publishing are configured.
 
 ## Install
 
