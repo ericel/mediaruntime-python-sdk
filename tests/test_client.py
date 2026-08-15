@@ -6,7 +6,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from mediaruntime import MediaRuntime, MediaRuntimeAPIError, ValidationError
+from mediaruntime import MediaRuntime, MediaRuntimeAPIError, ValidationError, __version__
 
 
 def response(
@@ -39,6 +39,7 @@ def test_create_maps_source_and_preserves_metadata() -> None:
 
     assert job.id == "job_123"
     assert job.message == "ok"
+    assert __version__ == "0.1.1"
     assert seen == {
         "url": "https://mediaruntime.com/v1/jobs",
         "api_key": "sdk_key",

@@ -9,6 +9,7 @@ from typing import Any, Literal
 
 import httpx
 
+from ._version import VERSION
 from .errors import (
     AuthenticationError,
     IdempotencyConflictError,
@@ -151,7 +152,10 @@ class Transport:
         retry: RetryMode = "safe",
         operation: str = "request",
     ) -> Any:
-        request_headers = {"Accept": "application/json", "User-Agent": "mediaruntime-python/0.1.0"}
+        request_headers = {
+            "Accept": "application/json",
+            "User-Agent": f"mediaruntime-python/{VERSION}",
+        }
         if authenticated:
             if not self.api_key:
                 raise AuthenticationError("A MediaRuntime API key is required", status=401)

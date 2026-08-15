@@ -2,7 +2,11 @@
 
 All notable changes to this project are documented here.
 
-## 0.1.0 - Unreleased
+## 0.1.1 - 2026-08-15
+
+- Correct the public package status after the initial trusted-publishing release.
+
+## 0.1.0 - 2026-08-15
 
 - Add the synchronous `MediaRuntime` client with jobs, uploads, capabilities, and
   account watermark-logo resources.
