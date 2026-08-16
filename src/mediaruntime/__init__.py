@@ -15,7 +15,7 @@ from .errors import (
     ValidationError,
     WebhookVerificationError,
 )
-from .jobs import Job, JobsClient
+from .jobs import Job, JobsClient, OutputAlias
 from .models import (
     Capabilities,
     JobDetails,
@@ -51,6 +51,7 @@ __all__ = [
     "MediaRuntimeTimeoutError",
     "ModerationResult",
     "NotFoundError",
+    "OutputAlias",
     "PermissionDeniedError",
     "RateLimitError",
     "RetryWebhookResult",

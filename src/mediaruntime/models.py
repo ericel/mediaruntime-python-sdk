@@ -92,6 +92,7 @@ class Capabilities:
     capabilities: dict[str, str]
     output_types: dict[str, list[str]]
     preset_overrides: dict[str, list[str]]
+    output_aliases: dict[str, dict[str, Any]]
     notes: list[str]
 
 

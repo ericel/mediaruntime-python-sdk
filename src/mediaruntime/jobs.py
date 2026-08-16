@@ -4,7 +4,7 @@ import random
 import time
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import quote
 
 from ._utils import bool_or_none, int_or_none, object_dict, string_list, string_or_none
@@ -21,6 +21,14 @@ from .transport import Transport
 from .uploads import Source, UploadsClient
 
 TERMINAL_STATUSES = {"COMPLETED", "FAILED", "REJECTED"}
+OutputAlias = Literal[
+    "video.web",
+    "video.streaming",
+    "video.social",
+    "audio.web",
+    "audio.transcription",
+    "image.web",
+]
 
 
 def _job_id(value: str) -> str:
@@ -76,12 +84,16 @@ class Job:
         id: str,
         status: str,
         tier: str,
+        required_tier: str | None,
+        outputs: list[dict[str, Any]],
         message: str,
         jobs: JobsClient,
     ) -> None:
         self.id = id
         self.status = status
         self.tier = tier
+        self.required_tier = required_tier
+        self.outputs = outputs
         self.message = message
         self._jobs = jobs
 
@@ -113,7 +125,7 @@ class JobsClient:
         *,
         source: Source | None = None,
         inputs: Sequence[Mapping[str, Any]] | None = None,
-        outputs: Sequence[Mapping[str, Any]] | None = None,
+        outputs: Sequence[Mapping[str, Any] | OutputAlias] | None = None,
         webhook_url: str | None = None,
         metadata: Mapping[str, Any] | None = None,
         moderation: Mapping[str, Any] | None = None,
@@ -152,7 +164,10 @@ class JobsClient:
                 field="idempotency_key",
             )
 
-        body: dict[str, Any] = {"outputs": [dict(item) for item in outputs or []]}
+        serialized_outputs: list[dict[str, Any] | str] = []
+        for item in outputs or []:
+            serialized_outputs.append(item if isinstance(item, str) else dict(item))
+        body: dict[str, Any] = {"outputs": serialized_outputs}
         if source is not None:
             body["file_url"] = self._uploads.resolve_source(source)
         else:
@@ -201,6 +216,10 @@ class JobsClient:
             id=str(value.get("id") or value.get("job_id") or ""),
             status=str(value.get("status") or "UNKNOWN"),
             tier=str(value.get("tier") or ""),
+            required_tier=string_or_none(value.get("required_tier")),
+            outputs=[
+                object_dict(item) for item in value.get("outputs", []) if isinstance(item, Mapping)
+            ],
             message=str(value.get("msg") or value.get("message") or ""),
             jobs=self,
         )
