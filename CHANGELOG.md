@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## 0.2.1 - 2026-08-16
+
+- Send canonical `source` for every batch item while retaining transparent local uploads.
+- Document the batch input surface and canonical ZIP bundle workflow.
+
 ## 0.2.0 - 2026-08-16
 
 - Add typed support for the six frozen output aliases.

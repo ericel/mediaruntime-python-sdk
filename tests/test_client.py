@@ -39,7 +39,7 @@ def test_create_maps_source_and_preserves_metadata() -> None:
 
     assert job.id == "job_123"
     assert job.message == "ok"
-    assert __version__ == "0.2.0"
+    assert __version__ == "0.2.1"
     assert seen == {
         "url": "https://mediaruntime.com/v1/jobs",
         "api_key": "sdk_key",
@@ -49,6 +49,52 @@ def test_create_maps_source_and_preserves_metadata() -> None:
             "outputs": [{"type": "mp4", "preset": "mp4_720p_h264_aac"}],
             "metadata": {"keep_Snake_Case": {"nested-key": 7}},
         },
+    }
+
+
+def test_create_sends_canonical_source_for_every_batch_input() -> None:
+    seen: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["body"] = json.loads(request.content)
+        return response(
+            200,
+            {"job_id": "job_batch", "status": "QUEUED", "tier": "standard", "msg": "ok"},
+        )
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    job = media.jobs.create(
+        inputs=[
+            {
+                "source": "https://cdn.example.com/a.mp4",
+                "input_id": "asset-a",
+                "metadata": {"position": 0},
+            },
+            {
+                "source": "https://cdn.example.com/b.mp4",
+                "input_id": "asset-b",
+            },
+        ],
+        outputs=["video.web"],
+    )
+
+    assert job.id == "job_batch"
+    assert seen["body"] == {
+        "inputs": [
+            {
+                "source": "https://cdn.example.com/a.mp4",
+                "input_id": "asset-a",
+                "metadata": {"position": 0},
+            },
+            {
+                "source": "https://cdn.example.com/b.mp4",
+                "input_id": "asset-b",
+            },
+        ],
+        "outputs": ["video.web"],
     }
 
 

@@ -2,7 +2,7 @@
 
 Official synchronous Python client for the MediaRuntime asynchronous media API.
 
-Status: stable `0.2.0`, published on PyPI with GitHub trusted publishing.
+Status: stable `0.2.1`, published on PyPI with GitHub trusted publishing.
 
 ## Install
 
@@ -54,6 +54,21 @@ output dictionaries remain supported and may be mixed with aliases.
 HTTP(S) and `gs://` sources are submitted directly. Other strings and `pathlib.Path`
 instances are treated as local files and uploaded through MediaRuntime's signed upload
 flow.
+
+## Batch inputs
+
+Use `source` on every batch item. Each value accepts the same HTTP(S), `gs://`, local-path,
+or `pathlib.Path` forms as a single job; the SDK uploads local files before submission.
+
+```python
+batch = media.jobs.create(
+    inputs=[
+        {"source": "https://cdn.example.com/a.mp4", "input_id": "asset-a"},
+        {"source": "./b.mp4", "input_id": "asset-b", "metadata": {"position": 1}},
+    ],
+    outputs=["video.web"],
+)
+```
 
 ## Moderation
 

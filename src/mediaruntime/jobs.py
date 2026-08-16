@@ -186,7 +186,7 @@ class JobsClient:
                         status=400,
                         field="inputs",
                     )
-                resolved = {"file_url": self._uploads.resolve_source(raw_source)}
+                resolved = {"source": self._uploads.resolve_source(raw_source)}
                 if "input_id" in item:
                     resolved["input_id"] = item["input_id"]
                 if "metadata" in item:
