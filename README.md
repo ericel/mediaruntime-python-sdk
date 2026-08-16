@@ -22,15 +22,26 @@ media = MediaRuntime(api_key=os.environ["MEDIARUNTIME_API_KEY"])
 job = media.jobs.create(
     source="./video.mp4",
     outputs=["video.web"],
-    moderation={"enabled": True, "mode": "report"},
     idempotency_key="video:vid_123:v1",
 )
 
-# Useful for scripts/tests. Prefer signed webhooks in production.
+# Polling is convenient for scripts, tests, and first-run verification.
 result = job.wait(timeout=300)
-moderation = media.jobs.get_moderation(result.id)
-print(result.bundle.get("download_url"), moderation.flagged_checks)
+bundle_url = result.bundle.get("download_url")
+if result.status != "COMPLETED" or not bundle_url:
+    raise RuntimeError(f"MediaRuntime job ended with {result.status}")
+print(bundle_url)
 ```
+
+`bundle_url` is a short-lived URL for the canonical ZIP containing every requested
+deliverable. One job can place a video, poster, subtitles, multiple renditions, or a
+complete HLS directory tree in that bundle; the SDK does not model those files as
+separate delivery URLs.
+
+In production, persist `job.id` and complete the workflow from the signed terminal
+webhook sent to the destination configured under Account → Webhooks. Redeem
+`delivery.bundle.download.url` from that event for the same ZIP. A job submission does
+not supply or override the webhook URL.
 
 `MediaRuntime()` without arguments is equivalent: it reads `MEDIARUNTIME_API_KEY`
 automatically. Never put the key in frontend code or commit its literal value.
@@ -43,6 +54,28 @@ output dictionaries remain supported and may be mixed with aliases.
 HTTP(S) and `gs://` sources are submitted directly. Other strings and `pathlib.Path`
 instances are treated as local files and uploaded through MediaRuntime's signed upload
 flow.
+
+## Moderation
+
+Enable report-only moderation when creating a visual-media job, then retrieve its result
+after completion:
+
+```python
+job = media.jobs.create(
+    source="https://cdn.example.com/photo.jpg",
+    outputs=["image.web"],
+    moderation={
+        "enabled": True,
+        "mode": "report",
+        "checks": ["sexual", "violence", "dangerous"],
+    },
+    idempotency_key="image:photo_123:v1",
+)
+
+result = job.wait()
+moderation = media.jobs.get_moderation(result.id)
+print(result.status, moderation.verdict, moderation.flagged_checks)
+```
 
 ## Verify webhooks
 
