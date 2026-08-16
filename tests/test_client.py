@@ -47,7 +47,7 @@ def test_create_maps_source_and_preserves_metadata() -> None:
 
     assert job.id == "job_123"
     assert job.message == "ok"
-    assert __version__ == "0.2.5"
+    assert __version__ == "1.0.0"
     assert seen == {
         "url": "https://mediaruntime.com/v1/jobs",
         "api_key": "sdk_key",
