@@ -1,0 +1,431 @@
+{
+  "api_version": "v1",
+  "canonical_requests": {
+    "batch": {
+      "example": {
+        "inputs": [
+          {
+            "input_id": "asset-a",
+            "source": "https://cdn.example.com/media/a.mp4"
+          },
+          {
+            "input_id": "asset-b",
+            "source": {
+              "url": "https://cdn.example.com/media/b.mp4"
+            }
+          }
+        ],
+        "outputs": [
+          "video.web"
+        ]
+      },
+      "input_required_fields": [
+        "source"
+      ],
+      "required_fields": [
+        "inputs",
+        "outputs"
+      ]
+    },
+    "single": {
+      "example": {
+        "outputs": [
+          "video.web"
+        ],
+        "source": "https://cdn.example.com/media/source.mp4"
+      },
+      "required_fields": [
+        "source",
+        "outputs"
+      ]
+    }
+  },
+  "compatibility": {
+    "accepted_legacy_source_field": "file_url",
+    "accepted_legacy_source_scopes": [
+      "single",
+      "batch_item"
+    ],
+    "canonical_source_field": "source"
+  },
+  "delivery_contract": {
+    "bundle": {
+      "archive_type": "zip",
+      "polling_path": "bundle",
+      "polling_fields": [
+        "available",
+        "download_url",
+        "expires_at",
+        "size_bytes",
+        "sha256",
+        "retention_days"
+      ],
+      "webhook_path": "delivery.bundle",
+      "webhook_fields": [
+        "type",
+        "filename",
+        "size_bytes",
+        "download.url",
+        "download.expiresAt"
+      ]
+    },
+    "parity": [
+      {
+        "polling_path": "status",
+        "semantic": "terminal status",
+        "webhook_path": "status"
+      },
+      {
+        "polling_path": "metadata",
+        "semantic": "caller request metadata",
+        "webhook_path": "meta.request_metadata"
+      },
+      {
+        "polling_path": "bundle.size_bytes",
+        "semantic": "bundle size",
+        "webhook_path": "delivery.bundle.size_bytes"
+      }
+    ],
+    "url_note": "Polling and webhook download URLs may be different valid, expiring URLs and are intentionally not equality-constrained."
+  },
+  "error_responses": {
+    "examples": [
+      {
+        "body": {
+          "detail": "Unauthorized",
+          "message": "Unauthorized"
+        },
+        "status": 401,
+        "name": "unauthorized"
+      },
+      {
+        "body": {
+          "detail": "Job not found"
+        },
+        "status": 404,
+        "name": "not_found"
+      },
+      {
+        "body": {
+          "detail": "Idempotency-Key was already used with a different request body"
+        },
+        "status": 422,
+        "name": "idempotency_conflict"
+      },
+      {
+        "body": {
+          "detail": "A request with this Idempotency-Key is still in progress. Retry in a few seconds, or after 300s if the earlier attempt was interrupted."
+        },
+        "name": "idempotency_in_progress",
+        "status": 409
+      },
+      {
+        "body": {
+          "detail": [
+            {
+              "loc": [
+                "body",
+                "source"
+              ],
+              "msg": "Field required",
+              "type": "missing"
+            }
+          ],
+          "message": "Request validation failed"
+        },
+        "status": 422,
+        "name": "validation"
+      }
+    ]
+  },
+  "idempotency_equivalence": {
+    "groups": [
+      {
+        "name": "single_source_and_legacy_file_url",
+        "payloads": [
+          {
+            "outputs": [
+              "video.web"
+            ],
+            "source": "https://cdn.example.com/media/source.mp4"
+          },
+          {
+            "file_url": "https://cdn.example.com/media/source.mp4",
+            "outputs": [
+              "video.web"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "batch_source_and_legacy_file_url",
+        "payloads": [
+          {
+            "inputs": [
+              {
+                "input_id": "asset-a",
+                "source": "https://cdn.example.com/media/a.mp4"
+              },
+              {
+                "input_id": "asset-b",
+                "source": "https://cdn.example.com/media/b.mp4"
+              }
+            ],
+            "outputs": [
+              "video.web"
+            ]
+          },
+          {
+            "inputs": [
+              {
+                "file_url": "https://cdn.example.com/media/a.mp4",
+                "input_id": "asset-a"
+              },
+              {
+                "file_url": "https://cdn.example.com/media/b.mp4",
+                "input_id": "asset-b"
+              }
+            ],
+            "outputs": [
+              "video.web"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "output_aliases": {
+    "audio.transcription": {
+      "artifacts": [
+        "128 kbps AAC/M4A",
+        "SRT transcript",
+        "WebVTT transcript"
+      ],
+      "output": {
+        "preset": "audio_aac_128k",
+        "subtitles": {
+          "enabled": true,
+          "format": "both",
+          "languages": [
+            "auto"
+          ],
+          "model": "ggml-base.bin",
+          "translate_to_english": false
+        },
+        "type": "audio"
+      },
+      "tier": "standard"
+    },
+    "audio.web": {
+      "artifacts": [
+        "128 kbps AAC/M4A"
+      ],
+      "output": {
+        "preset": "audio_aac_128k",
+        "type": "audio"
+      },
+      "tier": "standard"
+    },
+    "image.web": {
+      "artifacts": [
+        "1200x630 WebP",
+        "320x320 WebP"
+      ],
+      "output": {
+        "images": [
+          {
+            "format": "webp",
+            "height": 630,
+            "mode": "cover",
+            "quality": 84,
+            "width": 1200
+          },
+          {
+            "format": "webp",
+            "height": 320,
+            "mode": "cover",
+            "quality": 78,
+            "width": 320
+          }
+        ],
+        "preset": "image_multi_v1",
+        "type": "image"
+      },
+      "tier": "premium"
+    },
+    "video.social": {
+      "artifacts": [
+        "1080x1920 H.264/AAC MP4 with blurred 9:16 fill"
+      ],
+      "output": {
+        "preset": "social_vertical_blur",
+        "type": "social"
+      },
+      "tier": "premium"
+    },
+    "video.streaming": {
+      "artifacts": [
+        "HLS master playlist",
+        "1080p and 720p variants",
+        "media segments"
+      ],
+      "output": {
+        "preset": "hls_ladder_v1",
+        "type": "hls"
+      },
+      "tier": "standard"
+    },
+    "video.web": {
+      "artifacts": [
+        "720p H.264/AAC MP4",
+        "JPG poster"
+      ],
+      "output": {
+        "poster_format": "jpg",
+        "poster_time_sec": 2,
+        "preset": "mp4_720p_h264_aac",
+        "type": "mp4"
+      },
+      "tier": "standard"
+    }
+  },
+  "schema_version": "1.0.0",
+  "source_normalization": {
+    "cases": [
+      {
+        "expected_file_urls": [
+          "https://cdn.example.com/media/source.mp4"
+        ],
+        "name": "single_source_string",
+        "payload": {
+          "outputs": [
+            "video.web"
+          ],
+          "source": "https://cdn.example.com/media/source.mp4"
+        },
+        "scope": "single"
+      },
+      {
+        "expected_file_urls": [
+          "https://cdn.example.com/media/source.mp4"
+        ],
+        "name": "single_source_object",
+        "payload": {
+          "outputs": [
+            "video.web"
+          ],
+          "source": {
+            "url": "https://cdn.example.com/media/source.mp4"
+          }
+        },
+        "scope": "single"
+      },
+      {
+        "expected_file_urls": [
+          "https://cdn.example.com/media/source.mp4"
+        ],
+        "name": "single_legacy_file_url",
+        "payload": {
+          "file_url": "https://cdn.example.com/media/source.mp4",
+          "outputs": [
+            "video.web"
+          ]
+        },
+        "scope": "single"
+      },
+      {
+        "expected_file_urls": [
+          "https://cdn.example.com/media/a.mp4",
+          "https://cdn.example.com/media/b.mp4"
+        ],
+        "name": "batch_source_string_and_object",
+        "payload": {
+          "inputs": [
+            {
+              "input_id": "asset-a",
+              "source": "https://cdn.example.com/media/a.mp4"
+            },
+            {
+              "input_id": "asset-b",
+              "source": {
+                "url": "https://cdn.example.com/media/b.mp4"
+              }
+            }
+          ],
+          "outputs": [
+            "video.web"
+          ]
+        },
+        "scope": "batch"
+      },
+      {
+        "expected_file_urls": [
+          "https://cdn.example.com/media/a.mp4",
+          "https://cdn.example.com/media/b.mp4"
+        ],
+        "name": "batch_mixed_source_and_legacy_file_url",
+        "payload": {
+          "inputs": [
+            {
+              "input_id": "asset-a",
+              "source": "https://cdn.example.com/media/a.mp4"
+            },
+            {
+              "file_url": "https://cdn.example.com/media/b.mp4",
+              "input_id": "asset-b"
+            }
+          ],
+          "outputs": [
+            "video.web"
+          ]
+        },
+        "scope": "batch"
+      }
+    ],
+    "gateway_internal_field": "file_url"
+  },
+  "terminal_statuses": {
+    "batch": [
+      "COMPLETED",
+      "FAILED",
+      "PARTIAL"
+    ],
+    "batch_derivation_examples": [
+      {
+        "expected": "COMPLETED",
+        "summary": {
+          "completed_count": 2,
+          "failed_count": 0,
+          "rejected_count": 0,
+          "terminal_count": 2,
+          "total_inputs": 2
+        }
+      },
+      {
+        "expected": "FAILED",
+        "summary": {
+          "completed_count": 0,
+          "failed_count": 1,
+          "rejected_count": 1,
+          "terminal_count": 2,
+          "total_inputs": 2
+        }
+      },
+      {
+        "expected": "PARTIAL",
+        "summary": {
+          "completed_count": 1,
+          "failed_count": 1,
+          "rejected_count": 0,
+          "terminal_count": 2,
+          "total_inputs": 2
+        }
+      }
+    ],
+    "single": [
+      "COMPLETED",
+      "FAILED",
+      "REJECTED"
+    ]
+  }
+}

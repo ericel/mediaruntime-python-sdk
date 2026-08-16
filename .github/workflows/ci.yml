@@ -27,6 +27,7 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy src
+      - run: python scripts/sync_gateway_contract.py --check
       - run: pytest
 
   package:

@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## 0.2.2 - 2026-08-16
+
+- Send canonical `source` for both scalar and batch job submissions; legacy `file_url`
+  acceptance remains a gateway compatibility concern.
+- Add a checked-in gateway OpenAPI/conformance snapshot with deterministic sync and CI
+  drift checks.
+- Treat batch `PARTIAL` as terminal when polling with `job.wait()`.
+
 ## 0.2.1 - 2026-08-16
 
 - Send canonical `source` for every batch item while retaining transparent local uploads.

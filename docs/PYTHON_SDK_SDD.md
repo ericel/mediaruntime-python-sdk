@@ -1,6 +1,6 @@
 # MediaRuntime Python SDK — Software Design Document
 
-Status: implemented and published as stable `0.2.0`
+Status: implemented and published as stable `0.2.2`
 
 Distribution/module: `mediaruntime`
 
@@ -37,7 +37,8 @@ only for local, staging, proxy, and test environments.
 
 `jobs.create()` accepts exactly one of `source` or `inputs`. HTTP(S) and `gs://` values are
 passed through. Local paths obtain a signed target through `POST /v1/upload-url`, upload
-with every returned header, and submit the opaque `file_uri`.
+with every returned header, and submit the opaque `file_uri`. Both scalar and batch wire
+requests use canonical `source`; `file_url` is gateway-only legacy compatibility.
 
 `outputs` accepts explicit output dictionaries and the six typed frozen aliases. The SDK
 forwards alias strings unchanged; the gateway materializes them before validation,
@@ -70,6 +71,17 @@ with HTTP 401. They do not attempt datastore-level event deduplication.
 - Wheels and source distributions are built with Hatchling.
 - Python 3.10–3.13 are tested.
 - PyPI publishing must use trusted publishing; no long-lived token belongs in GitHub.
+
+## Contract conformance
+
+`contracts/v1/openapi.json` and `contracts/v1/conformance.json` are deterministic copies
+of the versioned gateway artifacts. SDK CI validates those local files and exercises the
+public client against their aliases, source spelling, terminal states, errors, and bundle
+delivery examples. The SDK has no runtime dependency on a gateway checkout.
+
+Maintainers refresh or compare the snapshot with `scripts/sync_gateway_contract.py` and
+an explicit `--gateway-repo` path. This keeps cross-repository updates intentional and
+reproducible.
 
 ## Release gates
 

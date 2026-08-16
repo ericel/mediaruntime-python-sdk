@@ -39,13 +39,13 @@ def test_create_maps_source_and_preserves_metadata() -> None:
 
     assert job.id == "job_123"
     assert job.message == "ok"
-    assert __version__ == "0.2.1"
+    assert __version__ == "0.2.2"
     assert seen == {
         "url": "https://mediaruntime.com/v1/jobs",
         "api_key": "sdk_key",
         "idempotency": "video:123:v1",
         "body": {
-            "file_url": "https://cdn.example.com/video.mp4",
+            "source": "https://cdn.example.com/video.mp4",
             "outputs": [{"type": "mp4", "preset": "mp4_720p_h264_aac"}],
             "metadata": {"keep_Snake_Case": {"nested-key": 7}},
         },
@@ -133,7 +133,7 @@ def test_create_forwards_output_aliases_for_gateway_resolution() -> None:
     assert job.required_tier == "standard"
     assert job.outputs[0]["preset"] == "mp4_720p_h264_aac"
     assert seen["body"] == {
-        "file_url": "https://cdn.example.com/video.mp4",
+        "source": "https://cdn.example.com/video.mp4",
         "outputs": ["video.web", "audio.transcription"],
     }
 
@@ -223,7 +223,8 @@ def test_local_source_uses_signed_upload_without_api_key_leak(tmp_path: Path) ->
     assert calls[1]["upload_token"] == "signed"
     assert calls[1]["body"] == b"video-bytes"
     submitted = json.loads(calls[2]["body"])
-    assert submitted["file_url"] == "gs://opaque/input.mp4"
+    assert submitted["source"] == "gs://opaque/input.mp4"
+    assert "file_url" not in submitted
 
 
 def test_wait_and_moderation_projection() -> None:

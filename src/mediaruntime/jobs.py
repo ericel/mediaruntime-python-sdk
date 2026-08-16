@@ -20,7 +20,7 @@ from .models import (
 from .transport import Transport
 from .uploads import Source, UploadsClient
 
-TERMINAL_STATUSES = {"COMPLETED", "FAILED", "REJECTED"}
+TERMINAL_STATUSES = {"COMPLETED", "FAILED", "REJECTED", "PARTIAL"}
 OutputAlias = Literal[
     "video.web",
     "video.streaming",
@@ -169,7 +169,7 @@ class JobsClient:
             serialized_outputs.append(item if isinstance(item, str) else dict(item))
         body: dict[str, Any] = {"outputs": serialized_outputs}
         if source is not None:
-            body["file_url"] = self._uploads.resolve_source(source)
+            body["source"] = self._uploads.resolve_source(source)
         else:
             resolved_inputs: list[dict[str, Any]] = []
             for item in inputs or []:
