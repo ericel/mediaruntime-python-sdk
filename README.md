@@ -2,7 +2,7 @@
 
 Official synchronous Python client for the MediaRuntime asynchronous media API.
 
-Status: stable `0.2.1`, published on PyPI with GitHub trusted publishing.
+Status: stable `0.2.3`, published on PyPI with GitHub trusted publishing.
 
 ## Install
 
@@ -102,6 +102,24 @@ print(event.id, event.job_id, event.status)
 `media.webhooks.flask(handler)`, `fastapi(handler)`, and `django(handler)` provide optional
 framework adapters without making those frameworks package dependencies. Persist and
 deduplicate `event.id` in your own datastore before acknowledging a delivery.
+
+## Error handling
+
+Every gateway response carries `X-Request-Id`. API exceptions expose the same correlation
+ID together with the gateway-owned code and retry classification:
+
+```python
+from mediaruntime import MediaRuntimeAPIError
+
+try:
+    media.jobs.get("job_123")
+except MediaRuntimeAPIError as error:
+    print(error.code, error.status, error.retryable, error.request_id, error.details)
+```
+
+`response_body` retains the complete compatibility response. Treat `retryable` as a
+transport classification: retrying an ambiguous job submission is safe only when the
+original call used an `Idempotency-Key`.
 
 See [the software design document](docs/PYTHON_SDK_SDD.md) for boundaries, retry safety,
 security behavior, compatibility, and release gates.

@@ -1,6 +1,6 @@
 # MediaRuntime Python SDK — Software Design Document
 
-Status: implemented and published as stable `0.2.2`
+Status: implemented and published as stable `0.2.3`
 
 Distribution/module: `mediaruntime`
 
@@ -52,6 +52,11 @@ do not retry automatically.
 
 `job.wait()` is for scripts, tests, notebooks, and reconciliation. Production completion
 should use signed webhooks.
+
+`MediaRuntimeAPIError` projects the gateway-owned `code`, message, HTTP `status`,
+`retryable`, `request_id`, and normalized `details`. `response_body` retains the complete
+legacy-compatible response, while typed subclasses continue to distinguish authentication,
+authorization, validation, rate-limit, not-found, and idempotency cases.
 
 ## Webhook security
 

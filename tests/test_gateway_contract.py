@@ -233,7 +233,26 @@ def test_gateway_error_envelopes_map_to_existing_sdk_errors() -> None:
             else:
                 media.jobs.get("job_contract")
         assert raised.value.status == example["status"]
-        assert raised.value.details == example["body"]
+        assert raised.value.code == example["body"]["error"]["code"]
+        assert raised.value.retryable is example["body"]["error"]["retryable"]
+        assert raised.value.request_id == example["body"]["error"]["request_id"]
+        assert raised.value.details == example["body"]["error"]["details"]
+        assert raised.value.response_body == example["body"]
+
+
+def test_request_correlation_contract_is_constrained_and_normalized() -> None:
+    contract = _contract()
+    correlation = contract["request_correlation"]
+    assert correlation["header"] == "X-Request-Id"
+    assert correlation["generated_prefix"] == "req_"
+    assert contract["error_responses"]["normalized_fields"] == [
+        "code",
+        "message",
+        "status",
+        "retryable",
+        "request_id",
+        "details",
+    ]
 
 
 def test_polling_and_verified_webhook_preserve_bundle_contract_parity() -> None:

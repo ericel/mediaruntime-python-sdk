@@ -14,13 +14,21 @@ class MediaRuntimeAPIError(MediaRuntimeError):
         message: str,
         *,
         status: int,
+        code: str = "api_error",
+        retryable: bool = False,
+        request_id: str | None = None,
         details: Any = None,
+        response_body: Any = None,
         field: str | None = None,
         headers: Mapping[str, str] | None = None,
     ) -> None:
         super().__init__(message)
         self.status = status
+        self.code = code
+        self.retryable = retryable
+        self.request_id = request_id
         self.details = details
+        self.response_body = response_body
         self.field = field
         self.headers = dict(headers or {})
 

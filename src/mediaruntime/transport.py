@@ -26,12 +26,25 @@ from .errors import (
 RetryMode = Literal["safe", "idempotent-submit", "never"]
 
 
+def _normalized_error(payload: Any) -> dict[str, Any] | None:
+    if not isinstance(payload, dict):
+        return None
+    error = payload.get("error")
+    return error if isinstance(error, dict) else None
+
+
 def _message_and_field(payload: Any, status: int) -> tuple[str, str | None]:
-    if isinstance(payload, dict):
+    normalized = _normalized_error(payload)
+    if normalized is not None and isinstance(normalized.get("message"), str):
+        normalized_message = str(normalized["message"])
+        detail = normalized.get("details")
+    elif isinstance(payload, dict):
+        normalized_message = ""
         detail = payload.get("detail")
         if detail is None:
             detail = payload.get("message") or payload.get("msg")
     else:
+        normalized_message = ""
         detail = payload
     field: str | None = None
     if isinstance(detail, list):
@@ -39,20 +52,22 @@ def _message_and_field(payload: Any, status: int) -> tuple[str, str | None]:
         for item in detail:
             if not isinstance(item, dict):
                 continue
-            message = item.get("msg")
-            if isinstance(message, str):
-                messages.append(message)
+            item_message = item.get("msg")
+            if isinstance(item_message, str):
+                messages.append(item_message)
             location = item.get("loc")
             if field is None and isinstance(location, list) and location:
                 field = str(location[-1])
         if messages:
-            return "; ".join(messages), field
+            return normalized_message or "; ".join(messages), field
     if isinstance(detail, dict):
         field_value = detail.get("field")
         field = field_value if isinstance(field_value, str) else None
-        message = detail.get("message") or detail.get("detail") or detail.get("error")
-        if isinstance(message, str):
-            return message, field
+        detail_message = detail.get("message") or detail.get("detail") or detail.get("error")
+        if isinstance(detail_message, str):
+            return normalized_message or detail_message, field
+    if normalized_message:
+        return normalized_message, field
     if isinstance(detail, str) and detail:
         return detail, field
     return f"MediaRuntime API request failed with status {status}", field
@@ -62,6 +77,19 @@ def _error_for_response(
     response: httpx.Response, payload: Any, operation: str
 ) -> MediaRuntimeAPIError:
     message, field = _message_and_field(payload, response.status_code)
+    normalized = _normalized_error(payload)
+    code = (
+        str(normalized.get("code"))
+        if normalized is not None and isinstance(normalized.get("code"), str)
+        else "api_error"
+    )
+    retryable = bool(normalized.get("retryable")) if normalized is not None else False
+    request_id = None
+    if normalized is not None and isinstance(normalized.get("request_id"), str):
+        request_id = str(normalized["request_id"])
+    if request_id is None:
+        request_id = response.headers.get("X-Request-Id")
+    details = normalized.get("details") if normalized is not None else payload
     error_type: type[MediaRuntimeAPIError]
     if response.status_code == 401:
         error_type = AuthenticationError
@@ -71,9 +99,11 @@ def _error_for_response(
         error_type = NotFoundError
     elif response.status_code == 429:
         error_type = RateLimitError
-    elif response.status_code == 409 and operation == "create-job":
+    elif code == "idempotency_in_progress" or (
+        response.status_code == 409 and operation == "create-job"
+    ):
         error_type = IdempotencyInProgressError
-    elif (
+    elif code == "idempotency_conflict" or (
         response.status_code == 422
         and operation == "create-job"
         and "idempotency-key" in message.lower()
@@ -87,7 +117,11 @@ def _error_for_response(
     return error_type(
         message,
         status=response.status_code,
-        details=payload,
+        code=code,
+        retryable=retryable,
+        request_id=request_id,
+        details=details,
+        response_body=payload,
         field=field,
         headers=dict(response.headers),
     )
@@ -158,7 +192,11 @@ class Transport:
         }
         if authenticated:
             if not self.api_key:
-                raise AuthenticationError("A MediaRuntime API key is required", status=401)
+                raise AuthenticationError(
+                    "A MediaRuntime API key is required",
+                    status=401,
+                    code="authentication_error",
+                )
             request_headers["X-API-Key"] = self.api_key
         if body is not None:
             request_headers["Content-Type"] = "application/json"

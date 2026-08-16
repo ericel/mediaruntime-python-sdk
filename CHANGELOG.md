@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## 0.2.3 - 2026-08-16
+
+- Surface gateway-owned `code`, `retryable`, and `request_id` fields on API errors.
+- Preserve normalized `details` separately from the complete legacy-compatible response body.
+- Pin request correlation and error classification in the shared conformance fixture.
+
 ## 0.2.2 - 2026-08-16
 
 - Send canonical `source` for both scalar and batch job submissions; legacy `file_url`
