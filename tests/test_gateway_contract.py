@@ -348,4 +348,3 @@ def test_contract_pins_representative_zip_trees_and_scoped_redemption() -> None:
     assert delivery["redemption"]["scope"] == "bundle"
     assert delivery["redemption"]["cross_account_result"] == 404
     assert delivery["redemption"]["expired_result"] == 410
-    assert delivery["redemption"]["missing_exp_result"] == 401

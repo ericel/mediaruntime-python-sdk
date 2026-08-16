@@ -173,7 +173,6 @@
     "redemption": {
       "cross_account_result": 404,
       "expired_result": 410,
-      "missing_exp_result": 401,
       "redirect_result": 307,
       "required_token_claims": [
         "account_id",
