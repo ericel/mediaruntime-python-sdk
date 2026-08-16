@@ -320,3 +320,32 @@ def test_polling_and_verified_webhook_preserve_bundle_contract_parity() -> None:
         assert _path(polling.raw, pair["polling_path"]) == _path(event.data, pair["webhook_path"])
     assert polling.bundle["download_url"] != event.data["delivery"]["bundle"]["download"]["url"]
     assert event.data["delivery"]["bundle"]["type"] == "zip"
+
+
+def test_contract_pins_representative_zip_trees_and_scoped_redemption() -> None:
+    contract = _contract()
+    delivery = contract["delivery_contract"]
+
+    assert contract["schema_version"] == "1.2.0"
+    assert [fixture["name"] for fixture in delivery["bundle_tree_cases"]] == [
+        "video_poster_subtitles",
+        "multi_rendition",
+        "image_derivatives",
+        "transcription",
+        "media_report",
+        "hls_tree",
+    ]
+    hls = next(
+        fixture for fixture in delivery["bundle_tree_cases"] if fixture["name"] == "hls_tree"
+    )
+    assert "master.m3u8" in hls["output_roots"]["streaming"]
+    assert delivery["redemption"]["required_token_claims"] == [
+        "account_id",
+        "job_id",
+        "type",
+        "exp",
+    ]
+    assert delivery["redemption"]["scope"] == "bundle"
+    assert delivery["redemption"]["cross_account_result"] == 404
+    assert delivery["redemption"]["expired_result"] == 410
+    assert delivery["redemption"]["missing_exp_result"] == 401
