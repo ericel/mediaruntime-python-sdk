@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## 1.0.0 - 2026-08-16
+
+- Declare the documented synchronous SDK surface production/stable under semantic
+  versioning and publish the matching PyPI classifier.
+- Add Python 3.14 to the supported CI and package-classifier matrix.
+- Freeze canonical source serialization, output aliases, terminal states, typed errors,
+  invocation-safe retries, and polling/webhook ZIP-bundle semantics as the v1 contract.
+
 ## 0.2.5 - 2026-08-16
 
 - Protect every `jobs.create()` invocation with one opaque generated UUID when the caller

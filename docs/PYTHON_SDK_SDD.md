@@ -1,6 +1,6 @@
 # MediaRuntime Python SDK — Software Design Document
 
-Status: implemented and published as stable `0.2.4`
+Status: stable public contract released as `1.0.0`
 
 Distribution/module: `mediaruntime`
 
@@ -83,7 +83,7 @@ with HTTP 401. They do not attempt datastore-level event deduplication.
 - `src/` layout, typed public API, and `py.typed` marker.
 - `httpx` is the only runtime dependency.
 - Wheels and source distributions are built with Hatchling.
-- Python 3.10–3.13 are tested.
+- Python 3.10–3.14 are tested.
 - PyPI publishing must use trusted publishing; no long-lived token belongs in GitHub.
 
 ## Contract conformance
