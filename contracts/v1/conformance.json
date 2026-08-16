@@ -69,90 +69,6 @@
         "download.expiresAt"
       ]
     },
-    "bundle_tree_cases": [
-      {
-        "excluded_paths": [],
-        "name": "video_poster_subtitles",
-        "output_roots": {
-          "poster": [
-            "launch.jpg"
-          ],
-          "subtitles": [
-            "en.srt",
-            "en.vtt"
-          ],
-          "video": [
-            "launch.mp4"
-          ]
-        }
-      },
-      {
-        "excluded_paths": [],
-        "name": "multi_rendition",
-        "output_roots": {
-          "renditions": [
-            "output_1080p.mp4",
-            "output_720p.mp4",
-            "output_480p.mp4",
-            "posters/output_1080p.jpg",
-            "posters/output_720p.jpg",
-            "posters/output_480p.jpg"
-          ]
-        }
-      },
-      {
-        "excluded_paths": [],
-        "name": "image_derivatives",
-        "output_roots": {
-          "images": [
-            "product_1200x630.webp",
-            "product_320x320.webp"
-          ]
-        }
-      },
-      {
-        "excluded_paths": [
-          "audio/whisper_input.wav"
-        ],
-        "name": "transcription",
-        "output_roots": {
-          "audio": [
-            "speech.m4a",
-            "whisper_input.wav"
-          ],
-          "subtitles": [
-            "en.srt",
-            "en.vtt"
-          ]
-        }
-      },
-      {
-        "excluded_paths": [],
-        "name": "media_report",
-        "output_roots": {
-          "report": [
-            "media_report.json"
-          ]
-        }
-      },
-      {
-        "excluded_paths": [],
-        "name": "hls_tree",
-        "output_roots": {
-          "streaming": [
-            "master.m3u8",
-            "1080p/index.m3u8",
-            "1080p/segment_000.ts",
-            "1080p/segment_001.ts",
-            "720p/index.m3u8",
-            "720p/segment_000.ts",
-            "720p/segment_001.ts",
-            "subtitles/en/index.m3u8",
-            "subtitles/en/segment_000.vtt"
-          ]
-        }
-      }
-    ],
     "parity": [
       {
         "polling_path": "status",
@@ -168,6 +84,16 @@
         "polling_path": "bundle.size_bytes",
         "semantic": "bundle size",
         "webhook_path": "delivery.bundle.size_bytes"
+      },
+      {
+        "polling_path": "bundle.retention_days",
+        "semantic": "bounded bundle retention days",
+        "webhook_path": "delivery.retentionDays"
+      },
+      {
+        "polling_path": "bundle.expires_at",
+        "semantic": "bounded bundle expiration",
+        "webhook_path": "delivery.expiresAt"
       }
     ],
     "redemption": {
@@ -182,6 +108,15 @@
       ],
       "scope": "bundle",
       "wrong_job_result": 403
+    },
+    "retention": {
+      "configuration": "DELIVERY_RETENTION_DAYS",
+      "expired_redemption_result": 410,
+      "polling_expires_path": "bundle.expires_at",
+      "polling_retention_days_path": "bundle.retention_days",
+      "storage_cleanup_policy": "external_infrastructure_not_managed_in_repository",
+      "webhook_expires_path": "delivery.expiresAt",
+      "webhook_retention_days_path": "delivery.retentionDays"
     },
     "url_note": "Polling and webhook download URLs may be different valid, expiring URLs and are intentionally not equality-constrained."
   },

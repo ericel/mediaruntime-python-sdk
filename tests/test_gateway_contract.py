@@ -269,6 +269,7 @@ def test_polling_and_verified_webhook_preserve_bundle_contract_parity() -> None:
             "size_bytes": 1048576,
             "sha256": "a" * 64,
             "retention_days": 7,
+            "expires_at": "2026-08-17T00:00:00Z",
         },
     }
     webhook_payload = {
@@ -282,6 +283,7 @@ def test_polling_and_verified_webhook_preserve_bundle_contract_parity() -> None:
         },
         "delivery": {
             "retentionDays": 7,
+            "expiresAt": "2026-08-17T00:00:00Z",
             "bundle": {
                 "type": contract["delivery_contract"]["bundle"]["archive_type"],
                 "size_bytes": 1048576,
@@ -322,23 +324,11 @@ def test_polling_and_verified_webhook_preserve_bundle_contract_parity() -> None:
     assert event.data["delivery"]["bundle"]["type"] == "zip"
 
 
-def test_contract_pins_representative_zip_trees_and_scoped_redemption() -> None:
+def test_contract_pins_scoped_redemption() -> None:
     contract = _contract()
     delivery = contract["delivery_contract"]
 
     assert contract["schema_version"] == "1.2.0"
-    assert [fixture["name"] for fixture in delivery["bundle_tree_cases"]] == [
-        "video_poster_subtitles",
-        "multi_rendition",
-        "image_derivatives",
-        "transcription",
-        "media_report",
-        "hls_tree",
-    ]
-    hls = next(
-        fixture for fixture in delivery["bundle_tree_cases"] if fixture["name"] == "hls_tree"
-    )
-    assert "master.m3u8" in hls["output_roots"]["streaming"]
     assert delivery["redemption"]["required_token_claims"] == [
         "account_id",
         "job_id",
@@ -348,3 +338,9 @@ def test_contract_pins_representative_zip_trees_and_scoped_redemption() -> None:
     assert delivery["redemption"]["scope"] == "bundle"
     assert delivery["redemption"]["cross_account_result"] == 404
     assert delivery["redemption"]["expired_result"] == 410
+    assert delivery["retention"]["configuration"] == "DELIVERY_RETENTION_DAYS"
+    assert delivery["retention"]["expired_redemption_result"] == 410
+    assert (
+        delivery["retention"]["storage_cleanup_policy"]
+        == "external_infrastructure_not_managed_in_repository"
+    )

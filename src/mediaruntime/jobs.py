@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import quote
+from uuid import uuid4
 
 from ._utils import bool_or_none, int_or_none, object_dict, string_list, string_or_none
 from .errors import JobWaitTimeoutError, ValidationError
@@ -156,13 +157,16 @@ class JobsClient:
                 status=400,
                 field="outputs",
             )
-        key = idempotency_key.strip() if idempotency_key is not None else None
-        if key is not None and not 1 <= len(key) <= 255:
+        caller_key = idempotency_key.strip() if idempotency_key is not None else None
+        if caller_key is not None and not 1 <= len(caller_key) <= 255:
             raise ValidationError(
                 "idempotency_key must contain between 1 and 255 characters",
                 status=400,
                 field="idempotency_key",
             )
+        # One opaque key protects retries made by this live invocation. It is deliberately
+        # not retained on Job and does not replace a caller's durable business key.
+        key = caller_key if caller_key is not None else str(uuid4())
 
         serialized_outputs: list[dict[str, Any] | str] = []
         for item in outputs or []:
@@ -207,8 +211,8 @@ class JobsClient:
                 "POST",
                 "/jobs",
                 body=body,
-                headers={"Idempotency-Key": key} if key else None,
-                retry="idempotent-submit" if key else "never",
+                headers={"Idempotency-Key": key},
+                retry="idempotent-submit",
                 operation="create-job",
             )
         )

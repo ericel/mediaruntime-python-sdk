@@ -2,7 +2,7 @@
 
 Official synchronous Python client for the MediaRuntime asynchronous media API.
 
-Status: stable `0.2.4`, published on PyPI with GitHub trusted publishing.
+Status: stable `0.2.5`, published on PyPI with GitHub trusted publishing.
 
 ## Install
 
@@ -118,8 +118,11 @@ except MediaRuntimeAPIError as error:
 ```
 
 `response_body` retains the complete compatibility response. Treat `retryable` as a
-transport classification: retrying an ambiguous job submission is safe only when the
-original call used an `Idempotency-Key`.
+transport classification. Every `jobs.create()` call uses one opaque, invocation-scoped
+`Idempotency-Key` for its own bounded retries, including a response lost after gateway
+acceptance. That generated key exists only for the live call; a later call receives a new
+one. Continue to pass a stable `idempotency_key` when the same business operation may be
+attempted after a process restart, queue redelivery, or from another machine.
 
 See [the software design document](docs/PYTHON_SDK_SDD.md) for boundaries, retry safety,
 security behavior, compatibility, and release gates.

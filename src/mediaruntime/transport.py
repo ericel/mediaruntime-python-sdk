@@ -100,7 +100,11 @@ def _error_for_response(
     elif response.status_code == 429:
         error_type = RateLimitError
     elif code == "idempotency_in_progress" or (
-        response.status_code == 409 and operation == "create-job"
+        normalized is None
+        and response.status_code == 409
+        and operation == "create-job"
+        and "idempotency-key" in message.lower()
+        and "progress" in message.lower()
     ):
         error_type = IdempotencyInProgressError
     elif code == "idempotency_conflict" or (
@@ -254,7 +258,16 @@ class Transport:
                 payload: Any = response.json()
             except json.JSONDecodeError:
                 payload = response.text
-            raise _error_for_response(response, payload, operation)
+            api_error = _error_for_response(response, payload, operation)
+            if (
+                retry == "idempotent-submit"
+                and isinstance(api_error, IdempotencyInProgressError)
+                and attempt < self.max_retries
+            ):
+                self._delay(attempt, response)
+                attempt += 1
+                continue
+            raise api_error
 
     def upload(
         self,

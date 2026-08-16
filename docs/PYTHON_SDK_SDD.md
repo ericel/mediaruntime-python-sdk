@@ -45,10 +45,19 @@ forwards alias strings unchanged; the gateway materializes them before validatio
 estimation, billing, and persistence. Job receipts expose `required_tier` and the resolved
 alias/type/preset tuples, while `capabilities.retrieve()` exposes the live alias catalog.
 
-The caller controls `idempotency_key`. The SDK never invents one. An unkeyed job submit
-is never replayed after an ambiguous network/5xx outcome; a keyed submit may use the
-normal bounded retry policy. Safe reads retry `429` and `5xx`. Mutations and signed PUTs
-do not retry automatically.
+Each `jobs.create()` invocation chooses exactly one idempotency key after local validation
+and before any upload or HTTP request. An explicit caller `idempotency_key` wins. Otherwise
+the SDK generates an opaque RFC 4122 UUID, reuses it for that invocation's bounded
+transport retries, and neither exposes nor persists it. A later invocation generates a
+fresh key.
+
+The generated key protects a single live call after an ambiguous timeout, connection loss,
+`429`, or `5xx`; it is not durable business idempotency. Callers must still provide a
+stable key to deduplicate attempts across process restarts, queue redelivery, machines, or
+later calls. After a lost response, the gateway may briefly return the typed `409`
+idempotency-in-progress response; keyed submission retries only that `409`. A `422`
+fingerprint conflict remains terminal. Safe reads retry `429` and `5xx`. Other mutations
+and signed PUTs do not retry automatically.
 
 `job.wait()` is for scripts, tests, notebooks, and reconciliation. Production completion
 should use signed webhooks.
@@ -95,4 +104,6 @@ reproducible.
 - A fresh virtual environment can import the wheel.
 - Tests pin request mapping, retry safety, signed upload headers, polling timeout, webhook
   raw-body sensitivity, replay protection, and framework adapter behavior.
+- Invocation-idempotency tests pin one key across lost-response, in-progress, `429`, and
+  `5xx` retries; a fresh key for a later call; caller-key override; and terminal conflicts.
 - Package/repository ownership and PyPI trusted publishing are configured.

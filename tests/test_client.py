@@ -2,11 +2,19 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from uuid import UUID
 
 import httpx
 import pytest
 
-from mediaruntime import MediaRuntime, MediaRuntimeAPIError, ValidationError, __version__
+from mediaruntime import (
+    IdempotencyConflictError,
+    IdempotencyInProgressError,
+    MediaRuntime,
+    MediaRuntimeAPIError,
+    ValidationError,
+    __version__,
+)
 
 
 def response(
@@ -39,7 +47,7 @@ def test_create_maps_source_and_preserves_metadata() -> None:
 
     assert job.id == "job_123"
     assert job.message == "ok"
-    assert __version__ == "0.2.4"
+    assert __version__ == "0.2.5"
     assert seen == {
         "url": "https://mediaruntime.com/v1/jobs",
         "api_key": "sdk_key",
@@ -138,33 +146,101 @@ def test_create_forwards_output_aliases_for_gateway_resolution() -> None:
     }
 
 
-def test_unkeyed_submit_is_not_retried() -> None:
-    attempts = 0
+def test_generated_key_survives_lost_response_and_in_progress_replay() -> None:
+    keys: list[str] = []
 
-    def handler(_request: httpx.Request) -> httpx.Response:
-        nonlocal attempts
-        attempts += 1
-        return response(503, {"detail": "unavailable"}, headers={"Retry-After": "0"})
+    def handler(request: httpx.Request) -> httpx.Response:
+        keys.append(request.headers["Idempotency-Key"])
+        if len(keys) == 1:
+            # The gateway accepted this request, but its response was lost in transit.
+            raise httpx.ReadTimeout("response lost", request=request)
+        if len(keys) == 2:
+            return response(
+                409,
+                {"detail": "A request with this Idempotency-Key is still in progress"},
+                headers={"Retry-After": "0"},
+            )
+        return response(200, {"job_id": "job_accepted", "status": "QUEUED"})
 
     media = MediaRuntime(
         api_key="sdk_key",
         max_retries=2,
         http_client=httpx.Client(transport=httpx.MockTransport(handler)),
     )
-    with pytest.raises(MediaRuntimeAPIError):
-        media.jobs.create(
-            source="https://cdn.example.com/video.mp4",
-            outputs=[{"type": "mp4"}],
-        )
-    assert attempts == 1
+    job = media.jobs.create(
+        source="https://cdn.example.com/video.mp4",
+        outputs=[{"type": "mp4"}],
+    )
+
+    assert job.id == "job_accepted"
+    assert len(keys) == 3
+    assert len(set(keys)) == 1
+    assert len(keys[0]) == 36
+    assert UUID(keys[0]).version == 4
 
 
-def test_keyed_submit_retries_a_retryable_response() -> None:
+def test_generated_key_is_reused_across_5xx_and_429_backoff() -> None:
+    keys: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        keys.append(request.headers["Idempotency-Key"])
+        if len(keys) == 1:
+            return response(503, {"detail": "unavailable"}, headers={"Retry-After": "0"})
+        if len(keys) == 2:
+            return response(429, {"detail": "busy"}, headers={"Retry-After": "0"})
+        return response(200, {"job_id": "job_retry", "status": "QUEUED"})
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        max_retries=2,
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    job = media.jobs.create(
+        source="https://cdn.example.com/video.mp4",
+        outputs=[{"type": "mp4"}],
+    )
+
+    assert job.id == "job_retry"
+    assert len(keys) == 3
+    assert len(set(keys)) == 1
+
+
+def test_generated_key_is_fresh_for_each_create_invocation_and_not_exposed() -> None:
+    keys: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        keys.append(request.headers["Idempotency-Key"])
+        return response(200, {"job_id": f"job_{len(keys)}", "status": "QUEUED"})
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    first = media.jobs.create(
+        source="https://cdn.example.com/video.mp4",
+        outputs=[{"type": "mp4"}],
+    )
+    second = media.jobs.create(
+        source="https://cdn.example.com/video.mp4",
+        outputs=[{"type": "mp4"}],
+    )
+
+    assert len(keys) == 2
+    assert keys[0] != keys[1]
+    assert all(UUID(key).version == 4 for key in keys)
+    assert not hasattr(first, "idempotency_key")
+    assert keys[0] not in repr(first)
+    assert keys[1] not in repr(second)
+
+
+def test_explicit_key_wins_and_is_reused_for_retry() -> None:
     attempts = 0
+    keys: list[str] = []
 
-    def handler(_request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx.Request) -> httpx.Response:
         nonlocal attempts
         attempts += 1
+        keys.append(request.headers["Idempotency-Key"])
         if attempts == 1:
             return response(503, {"detail": "unavailable"}, headers={"Retry-After": "0"})
         return response(200, {"job_id": "job_retry", "status": "QUEUED"})
@@ -181,6 +257,110 @@ def test_keyed_submit_retries_a_retryable_response() -> None:
     )
     assert job.id == "job_retry"
     assert attempts == 2
+    assert keys == ["retry-safe", "retry-safe"]
+
+
+def test_explicit_key_does_not_generate_an_invocation_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def unexpected_uuid() -> None:
+        raise AssertionError("explicit idempotency key attempted UUID generation")
+
+    monkeypatch.setattr("mediaruntime.jobs.uuid4", unexpected_uuid)
+    seen: dict[str, str] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["key"] = request.headers["Idempotency-Key"]
+        return response(200, {"job_id": "job_explicit", "status": "QUEUED"})
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    media.jobs.create(
+        source="https://cdn.example.com/video.mp4",
+        outputs=[{"type": "mp4"}],
+        idempotency_key="business:asset-42:v3",
+    )
+    assert seen["key"] == "business:asset-42:v3"
+
+
+def test_generated_key_keeps_idempotency_conflict_terminal() -> None:
+    attempts = 0
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        attempts += 1
+        return response(
+            422,
+            {"detail": "Idempotency-Key was already used with a different request body"},
+        )
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        max_retries=2,
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    with pytest.raises(IdempotencyConflictError):
+        media.jobs.create(
+            source="https://cdn.example.com/video.mp4",
+            outputs=[{"type": "mp4"}],
+        )
+    assert attempts == 1
+
+
+def test_generated_key_does_not_retry_an_unrelated_normalized_409() -> None:
+    attempts = 0
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        attempts += 1
+        return response(
+            409,
+            {
+                "error": {
+                    "code": "resource_conflict",
+                    "message": "A different resource conflicts",
+                    "retryable": False,
+                    "request_id": "req_conflict_other",
+                    "details": None,
+                }
+            },
+        )
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        max_retries=2,
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    with pytest.raises(MediaRuntimeAPIError, match="A different resource conflicts"):
+        media.jobs.create(
+            source="https://cdn.example.com/video.mp4",
+            outputs=[{"type": "mp4"}],
+        )
+    assert attempts == 1
+
+
+def test_generated_key_does_not_retry_an_unrelated_legacy_409() -> None:
+    attempts = 0
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        attempts += 1
+        return response(409, {"detail": "A sandbox job is already active for this session"})
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        max_retries=2,
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    with pytest.raises(MediaRuntimeAPIError, match="sandbox job is already active") as raised:
+        media.jobs.create(
+            source="https://cdn.example.com/video.mp4",
+            outputs=[{"type": "mp4"}],
+        )
+    assert not isinstance(raised.value, IdempotencyInProgressError)
+    assert attempts == 1
 
 
 def test_local_source_uses_signed_upload_without_api_key_leak(tmp_path: Path) -> None:

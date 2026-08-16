@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## 0.2.5 - 2026-08-16
+
+- Protect every `jobs.create()` invocation with one opaque generated UUID when the caller
+  omits `idempotency_key`, reusing it only for that call's bounded transport retries.
+- Retry a typed idempotency-in-progress `409` during keyed submission while keeping a
+  different-body `422` conflict terminal.
+- Preserve explicit stable keys for durable business-level deduplication across calls.
+
 ## 0.2.4 - 2026-08-16
 
 - Vendor only the filtered public OpenAPI surface in repository conformance fixtures.
