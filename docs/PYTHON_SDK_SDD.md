@@ -1,10 +1,10 @@
 # MediaRuntime Python SDK — Software Design Document
 
-Status: implementation in progress
+Status: implemented and published as stable `0.2.0`
 
 Distribution/module: `mediaruntime`
 
-Proposed repository: `ericel/mediaruntime-python-sdk`
+Repository: `ericel/mediaruntime-python-sdk`
 
 Runtime: Python 3.10+
 
@@ -38,6 +38,11 @@ only for local, staging, proxy, and test environments.
 `jobs.create()` accepts exactly one of `source` or `inputs`. HTTP(S) and `gs://` values are
 passed through. Local paths obtain a signed target through `POST /v1/upload-url`, upload
 with every returned header, and submit the opaque `file_uri`.
+
+`outputs` accepts explicit output dictionaries and the six typed frozen aliases. The SDK
+forwards alias strings unchanged; the gateway materializes them before validation,
+estimation, billing, and persistence. Job receipts expose `required_tier` and the resolved
+alias/type/preset tuples, while `capabilities.retrieve()` exposes the live alias catalog.
 
 The caller controls `idempotency_key`. The SDK never invents one. An unkeyed job submit
 is never replayed after an ambiguous network/5xx outcome; a keyed submit may use the
@@ -73,4 +78,4 @@ with HTTP 401. They do not attempt datastore-level event deduplication.
 - A fresh virtual environment can import the wheel.
 - Tests pin request mapping, retry safety, signed upload headers, polling timeout, webhook
   raw-body sensitivity, replay protection, and framework adapter behavior.
-- Package/repository ownership and PyPI trusted publishing are confirmed before `0.1.0`.
+- Package/repository ownership and PyPI trusted publishing are configured.
