@@ -49,6 +49,8 @@ def test_openapi_and_conformance_freeze_canonical_source_fields() -> None:
 
     canonical = contract["compatibility"]["canonical_source_field"]
     legacy = contract["compatibility"]["accepted_legacy_source_field"]
+    assert not any(path.startswith("/v1/internal/") for path in openapi["paths"])
+    assert not any(name.startswith("Internal") for name in schemas)
     assert canonical == "source"
     assert canonical in schemas["CreateJobRequest"]["properties"]
     assert canonical in schemas["JobInput"]["properties"]

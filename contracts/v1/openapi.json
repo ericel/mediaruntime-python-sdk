@@ -254,41 +254,6 @@
         "title": "ImageRendition",
         "type": "object"
       },
-      "InternalBillingEnsureRequest": {
-        "properties": {
-          "account_id": {
-            "maxLength": 160,
-            "minLength": 1,
-            "title": "Account Id",
-            "type": "string"
-          },
-          "amount_cents_needed": {
-            "maximum": 10000000.0,
-            "minimum": 1.0,
-            "title": "Amount Cents Needed",
-            "type": "integer"
-          },
-          "currency": {
-            "default": "USD",
-            "pattern": "^[A-Za-z]{3}$",
-            "title": "Currency",
-            "type": "string"
-          },
-          "job_id": {
-            "maxLength": 160,
-            "minLength": 1,
-            "title": "Job Id",
-            "type": "string"
-          }
-        },
-        "required": [
-          "account_id",
-          "job_id",
-          "amount_cents_needed"
-        ],
-        "title": "InternalBillingEnsureRequest",
-        "type": "object"
-      },
       "JobBillingInfo": {
         "properties": {
           "currency": {
@@ -2104,50 +2069,6 @@
           }
         },
         "summary": "Get Capabilities",
-        "tags": [
-          "App Routes"
-        ]
-      }
-    },
-    "/v1/internal/billing/ensure": {
-      "post": {
-        "operationId": "ensure_internal_final_billing_v1_internal_billing_ensure_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InternalBillingEnsureRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Ensure Internal Final Billing",
         "tags": [
           "App Routes"
         ]

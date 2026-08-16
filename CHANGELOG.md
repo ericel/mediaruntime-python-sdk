@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## 0.2.4 - 2026-08-16
+
+- Vendor only the filtered public OpenAPI surface in repository conformance fixtures.
+- Remove private upstream repository naming from public maintenance documentation.
+
 ## 0.2.3 - 2026-08-16
 
 - Surface gateway-owned `code`, `retryable`, and `request_id` fields on API errors.

@@ -1,6 +1,6 @@
 # MediaRuntime Python SDK — Software Design Document
 
-Status: implemented and published as stable `0.2.3`
+Status: implemented and published as stable `0.2.4`
 
 Distribution/module: `mediaruntime`
 
@@ -80,7 +80,7 @@ with HTTP 401. They do not attempt datastore-level event deduplication.
 ## Contract conformance
 
 `contracts/v1/openapi.json` and `contracts/v1/conformance.json` are deterministic copies
-of the versioned gateway artifacts. SDK CI validates those local files and exercises the
+of the filtered public API artifacts. SDK CI validates those local files and exercises the
 public client against their aliases, source spelling, terminal states, errors, and bundle
 delivery examples. The SDK has no runtime dependency on a gateway checkout.
 
