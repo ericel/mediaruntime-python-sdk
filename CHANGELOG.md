@@ -2,12 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## 1.1.1 - 2026-08-18
+
+- Preserve the gateway's ordered `public_presets` list as `public_presets` instead
+  of requiring clients to infer public availability from the broader preset catalog.
+
 ## 1.1.0 - 2026-08-18
 
 - Expose the complete typed gateway capability catalog through
   `media.capabilities.retrieve()`.
-- Include public preset IDs, accepted source kinds, output artifacts, base tiers,
-  optional feature metadata, and the six frozen aliases.
+- Include accepted source kinds, output artifacts, base tiers, optional feature metadata,
+  and the six frozen aliases.
 - Preserve additive capability fields under the stable 1.x compatibility policy.
 
 ## 1.0.0 - 2026-08-16

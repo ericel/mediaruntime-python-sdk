@@ -47,7 +47,7 @@ def test_create_maps_source_and_preserves_metadata() -> None:
 
     assert job.id == "job_123"
     assert job.message == "ok"
-    assert __version__ == "1.1.0"
+    assert __version__ == "1.1.1"
     assert seen == {
         "url": "https://mediaruntime.com/v1/jobs",
         "api_key": "sdk_key",
@@ -452,6 +452,7 @@ def test_capabilities_do_not_require_an_api_key() -> None:
                 "capabilities": {"jobs": "enabled"},
                 "output_types": {"mp4": ["mp4_720p_h264_aac"]},
                 "preset_overrides": {},
+                "public_presets": ["webm_vp9_1080p"],
                 "presets": {
                     "webm_vp9_1080p": {
                         "output_type": "webm",
@@ -474,6 +475,7 @@ def test_capabilities_do_not_require_an_api_key() -> None:
     media = MediaRuntime(http_client=httpx.Client(transport=httpx.MockTransport(handler)))
     result = media.capabilities.retrieve()
     assert result.output_types["mp4"] == ["mp4_720p_h264_aac"]
+    assert result.public_presets == ["webm_vp9_1080p"]
     assert result.output_aliases["video.web"]["preset"] == "mp4_720p_h264_aac"
     assert result.presets["webm_vp9_1080p"]["codec"] == "vp9"
     assert result.features["moderation"]["rejection_status"] == "REJECTED"
