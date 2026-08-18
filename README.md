@@ -76,8 +76,9 @@ batch = media.jobs.create(
 
 ## Moderation
 
-Enable report-only moderation when creating a visual-media job, then retrieve its result
-after completion:
+Choose observational `report` moderation or fail-closed `block` enforcement when creating
+a visual-media job, then retrieve its result after completion. In block mode, `review` or
+`block` ends the job as `REJECTED` before transcoding; `allow` continues.
 
 ```python
 job = media.jobs.create(
@@ -95,6 +96,18 @@ result = job.wait()
 moderation = media.jobs.get_moderation(result.id)
 print(result.status, moderation.verdict, moderation.flagged_checks)
 ```
+
+Explicit output mappings support MPEG-DASH and VP9/WebM:
+
+```python
+outputs = [
+    {"type": "dash", "preset": "dash_ladder_v1"},
+    {"type": "webm", "preset": "webm_vp9_1080p"},
+]
+```
+
+`media.capabilities.retrieve()` includes the gateway's full preset catalog and feature
+contracts, including smart-crop semantics and moderation enforcement modes.
 
 ## Verify webhooks
 

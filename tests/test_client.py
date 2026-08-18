@@ -452,6 +452,14 @@ def test_capabilities_do_not_require_an_api_key() -> None:
                 "capabilities": {"jobs": "enabled"},
                 "output_types": {"mp4": ["mp4_720p_h264_aac"]},
                 "preset_overrides": {},
+                "presets": {
+                    "webm_vp9_1080p": {
+                        "output_type": "webm",
+                        "base_tier": "premium",
+                        "codec": "vp9",
+                    }
+                },
+                "features": {"moderation": {"rejection_status": "REJECTED"}},
                 "output_aliases": {
                     "video.web": {
                         "type": "mp4",
@@ -467,6 +475,8 @@ def test_capabilities_do_not_require_an_api_key() -> None:
     result = media.capabilities.retrieve()
     assert result.output_types["mp4"] == ["mp4_720p_h264_aac"]
     assert result.output_aliases["video.web"]["preset"] == "mp4_720p_h264_aac"
+    assert result.presets["webm_vp9_1080p"]["codec"] == "vp9"
+    assert result.features["moderation"]["rejection_status"] == "REJECTED"
 
 
 def test_job_id_is_encoded_as_one_path_segment() -> None:

@@ -36,6 +36,14 @@ class CapabilitiesClient:
             capabilities=_string_map(data.get("capabilities")),
             output_types=_string_list_map(data.get("output_types")),
             preset_overrides=_string_list_map(data.get("preset_overrides")),
+            presets={
+                str(key): object_dict(item)
+                for key, item in object_dict(data.get("presets")).items()
+            },
+            features={
+                str(key): object_dict(item)
+                for key, item in object_dict(data.get("features")).items()
+            },
             output_aliases={
                 str(key): object_dict(item)
                 for key, item in object_dict(data.get("output_aliases")).items()

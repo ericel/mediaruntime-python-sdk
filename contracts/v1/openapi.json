@@ -1376,7 +1376,9 @@
       "OutputType": {
         "enum": [
           "mp4",
+          "webm",
           "hls",
+          "dash",
           "audio",
           "image",
           "social",
@@ -1747,7 +1749,7 @@
                 "type": "null"
               }
             ],
-            "description": "h264, hevc, av1",
+            "description": "h264, hevc, av1, vp9",
             "title": "Codec"
           },
           "fps": {

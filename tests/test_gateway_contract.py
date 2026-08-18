@@ -56,6 +56,17 @@ def test_openapi_and_conformance_freeze_canonical_source_fields() -> None:
     assert canonical in schemas["JobInput"]["properties"]
     assert legacy in schemas["CreateJobRequest"]["properties"]
     assert legacy in schemas["JobInput"]["properties"]
+    assert set(schemas["OutputType"]["enum"]) == {
+        "mp4",
+        "webm",
+        "hls",
+        "dash",
+        "audio",
+        "image",
+        "social",
+        "gif",
+        "frames",
+    }
 
 
 def test_sdk_serializes_scalar_and_batch_sources_from_contract() -> None:
