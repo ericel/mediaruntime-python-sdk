@@ -2,7 +2,7 @@
 
 Official synchronous Python client for the MediaRuntime asynchronous media API.
 
-Status: production/stable `1.0.0`, published on PyPI with GitHub trusted publishing.
+Status: production/stable `1.1.0`, published on PyPI with GitHub trusted publishing.
 
 The documented `1.x` public API follows semantic versioning. Breaking changes to public
 imports, arguments, exceptions, or documented response projections require a new major
