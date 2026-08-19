@@ -21,6 +21,7 @@ MediaRuntime
 ├── jobs.create/get/list/wait/get_moderation/get_media_report/retry_webhook
 ├── uploads.create_target/upload_file
 ├── capabilities.retrieve
+├── recipes.list/get/create/create_version/archive
 ├── watermark_logo.create_upload_target/confirm/upload
 └── webhooks.verify/flask/fastapi/django
 ```
@@ -44,6 +45,11 @@ requests use canonical `source`; `file_url` is gateway-only legacy compatibility
 forwards alias strings unchanged; the gateway materializes them before validation,
 estimation, billing, and persistence. Job receipts expose `required_tier` and the resolved
 alias/type/preset tuples, while `capabilities.retrieve()` exposes the live alias catalog.
+
+`recipes` manages immutable, account-scoped hosted processing policies. The client
+forwards references unchanged; the gateway resolves and materializes the exact version
+before validation, estimation, billing, idempotency, and dispatch. Job creation accepts
+either one hosted recipe or inline outputs/moderation/watermark, never both.
 
 Each `jobs.create()` invocation chooses exactly one idempotency key after local validation
 and before any upload or HTTP request. An explicit caller `idempotency_key` wins. Otherwise

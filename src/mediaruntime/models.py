@@ -19,6 +19,29 @@ class JobDetails:
     updated_at: str | None
     started_at: str | None
     completed_at: str | None
+    recipe: RecipeAcknowledgement | None
+    raw: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class RecipeAcknowledgement:
+    name: str
+    version: int
+    reference: str
+    built_in: bool
+    sha256: str
+
+
+@dataclass(frozen=True, slots=True)
+class HostedRecipe:
+    name: str
+    version: int
+    reference: str
+    description: str
+    built_in: bool
+    status: str
+    sha256: str
+    template: dict[str, Any] | None
     raw: dict[str, Any]
 
 
@@ -106,5 +129,6 @@ class WebhookEvent:
     account_id: str | None
     status: str
     type: str
+    recipe: RecipeAcknowledgement | None
     data: dict[str, Any]
     raw_body: bytes

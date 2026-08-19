@@ -130,6 +130,50 @@ def test_six_typed_aliases_match_the_gateway_contract() -> None:
     assert seen["outputs"] == list(get_args(OutputAlias))
 
 
+def test_hosted_recipe_reference_and_acknowledgement_match_contract() -> None:
+    hosted = _contract()["hosted_recipes"]
+    seen: dict[str, Any] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.update(json.loads(request.content))
+        return _response(
+            200,
+            {
+                "job_id": "job_recipe_contract",
+                "status": "QUEUED",
+                "recipe": {
+                    "name": "web-video",
+                    "version": 1,
+                    "reference": hosted["built_ins"][0],
+                    "built_in": True,
+                    "sha256": "a" * 64,
+                },
+            },
+        )
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    job = media.jobs.create(
+        source="https://cdn.example.com/media/source.mp4",
+        recipe=hosted["built_ins"][0],
+    )
+
+    assert seen == {
+        "source": "https://cdn.example.com/media/source.mp4",
+        "recipe": hosted["built_ins"][0],
+    }
+    assert job.recipe is not None
+    assert set(job.recipe.__dataclass_fields__) == {
+        "name",
+        "version",
+        "reference",
+        "built_in",
+        "sha256",
+    }
+
+
 def test_wait_stops_for_every_gateway_terminal_status() -> None:
     statuses = _contract()["terminal_statuses"]
     expected = set(statuses["single"]) | set(statuses["batch"])
@@ -339,7 +383,7 @@ def test_contract_pins_scoped_redemption() -> None:
     contract = _contract()
     delivery = contract["delivery_contract"]
 
-    assert contract["schema_version"] == "1.2.0"
+    assert contract["schema_version"] == "1.3.0"
     assert delivery["redemption"]["required_token_claims"] == [
         "account_id",
         "job_id",

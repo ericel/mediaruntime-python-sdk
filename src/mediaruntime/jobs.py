@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import re
 import time
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -16,6 +17,7 @@ from .models import (
     JobSummary,
     MediaReportResult,
     ModerationResult,
+    RecipeAcknowledgement,
     RetryWebhookResult,
 )
 from .transport import Transport
@@ -30,6 +32,19 @@ OutputAlias = Literal[
     "audio.transcription",
     "image.web",
 ]
+RECIPE_REFERENCE_RE = re.compile(r"^[a-z][a-z0-9-]{2,63}(?:@[1-9][0-9]*)?$")
+
+
+def _recipe_acknowledgement(value: Any) -> RecipeAcknowledgement | None:
+    if not isinstance(value, Mapping):
+        return None
+    return RecipeAcknowledgement(
+        name=str(value.get("name") or ""),
+        version=int(value.get("version") or 0),
+        reference=str(value.get("reference") or ""),
+        built_in=bool(value.get("built_in")),
+        sha256=str(value.get("sha256") or ""),
+    )
 
 
 def _job_id(value: str) -> str:
@@ -55,6 +70,7 @@ def _job_details(value: Any) -> JobDetails:
         updated_at=string_or_none(data.get("updated_at")),
         started_at=string_or_none(data.get("started_at")),
         completed_at=string_or_none(data.get("completed_at")),
+        recipe=_recipe_acknowledgement(data.get("recipe")),
         raw=data,
     )
 
@@ -88,6 +104,7 @@ class Job:
         required_tier: str | None,
         outputs: list[dict[str, Any]],
         message: str,
+        recipe: RecipeAcknowledgement | None,
         jobs: JobsClient,
     ) -> None:
         self.id = id
@@ -96,6 +113,7 @@ class Job:
         self.required_tier = required_tier
         self.outputs = outputs
         self.message = message
+        self.recipe = recipe
         self._jobs = jobs
 
     def refresh(self) -> JobDetails:
@@ -131,6 +149,7 @@ class JobsClient:
         metadata: Mapping[str, Any] | None = None,
         moderation: Mapping[str, Any] | None = None,
         watermark: Mapping[str, Any] | None = None,
+        recipe: str | None = None,
         idempotency_key: str | None = None,
     ) -> Job:
         if (source is None) == (inputs is None):
@@ -145,13 +164,27 @@ class JobsClient:
                 status=400,
                 field="inputs",
             )
+        normalized_recipe = recipe.strip() if recipe is not None else None
+        if normalized_recipe is not None and not RECIPE_REFERENCE_RE.fullmatch(normalized_recipe):
+            raise ValidationError(
+                "recipe must be a valid name or name@version",
+                status=400,
+                field="recipe",
+            )
+        if normalized_recipe is not None and (outputs or moderation or watermark):
+            raise ValidationError(
+                "recipe cannot be combined with outputs, moderation, or watermark",
+                status=400,
+                field="recipe",
+            )
         if outputs is not None and len(outputs) > 10:
             raise ValidationError(
                 "outputs must not contain more than 10 items",
                 status=400,
                 field="outputs",
             )
-        if not outputs and not (moderation and moderation.get("enabled") is True):
+        analysis_only = moderation is not None and moderation.get("enabled") is True
+        if normalized_recipe is None and not outputs and not analysis_only:
             raise ValidationError(
                 "Provide at least one output, or enable moderation for an analysis-only job",
                 status=400,
@@ -171,7 +204,11 @@ class JobsClient:
         serialized_outputs: list[dict[str, Any] | str] = []
         for item in outputs or []:
             serialized_outputs.append(item if isinstance(item, str) else dict(item))
-        body: dict[str, Any] = {"outputs": serialized_outputs}
+        body: dict[str, Any] = {}
+        if normalized_recipe is not None:
+            body["recipe"] = normalized_recipe
+        else:
+            body["outputs"] = serialized_outputs
         if source is not None:
             body["source"] = self._uploads.resolve_source(source)
         else:
@@ -225,6 +262,7 @@ class JobsClient:
                 object_dict(item) for item in value.get("outputs", []) if isinstance(item, Mapping)
             ],
             message=str(value.get("msg") or value.get("message") or ""),
+            recipe=_recipe_acknowledgement(value.get("recipe")),
             jobs=self,
         )
 

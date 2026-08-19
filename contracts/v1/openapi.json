@@ -107,6 +107,21 @@
             "title": "Outputs",
             "type": "array"
           },
+          "recipe": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "minLength": 3,
+                "pattern": "^[a-z][a-z0-9-]{2,63}(?:@[1-9][0-9]*)?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Hosted recipe reference, optionally pinned as name@version.",
+            "title": "Recipe"
+          },
           "source": {
             "anyOf": [
               {
@@ -1028,6 +1043,18 @@
             "title": "Outputs",
             "type": "array"
           },
+          "recipe": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipe"
+          },
           "required_tier": {
             "anyOf": [
               {
@@ -1118,6 +1145,19 @@
             "description": "The metadata you submitted",
             "title": "Metadata",
             "type": "object"
+          },
+          "recipe": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Exact hosted recipe version materialized for this job, when used.",
+            "title": "Recipe"
           },
           "started_at": {
             "anyOf": [
@@ -1387,6 +1427,102 @@
         ],
         "title": "OutputType",
         "type": "string"
+      },
+      "RecipeCreateRequest": {
+        "properties": {
+          "description": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "pattern": "^[a-z][a-z0-9-]{2,63}$",
+            "title": "Name",
+            "type": "string"
+          },
+          "template": {
+            "$ref": "#/components/schemas/RecipeTemplate"
+          }
+        },
+        "required": [
+          "name",
+          "template"
+        ],
+        "title": "RecipeCreateRequest",
+        "type": "object"
+      },
+      "RecipeTemplate": {
+        "description": "Processing policy stored in one immutable hosted-recipe version.",
+        "properties": {
+          "moderation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModerationConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outputs": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TranscodeOutput"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "maxItems": 10,
+            "title": "Outputs",
+            "type": "array"
+          },
+          "watermark": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WatermarkConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "RecipeTemplate",
+        "type": "object"
+      },
+      "RecipeVersionCreateRequest": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "expected_latest_version": {
+            "minimum": 1.0,
+            "title": "Expected Latest Version",
+            "type": "integer"
+          },
+          "template": {
+            "$ref": "#/components/schemas/RecipeTemplate"
+          }
+        },
+        "required": [
+          "expected_latest_version",
+          "template"
+        ],
+        "title": "RecipeVersionCreateRequest",
+        "type": "object"
       },
       "SourceUrl": {
         "additionalProperties": false,
@@ -2476,6 +2612,292 @@
         "summary": "Retry Webhook",
         "tags": [
           "App Routes"
+        ]
+      }
+    },
+    "/v1/recipes": {
+      "get": {
+        "operationId": "list_hosted_recipes_v1_recipes_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Hosted Recipes",
+        "tags": [
+          "recipes"
+        ]
+      },
+      "post": {
+        "operationId": "create_hosted_recipe_v1_recipes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecipeCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Hosted Recipe",
+        "tags": [
+          "recipes"
+        ]
+      }
+    },
+    "/v1/recipes/{name}": {
+      "delete": {
+        "operationId": "archive_hosted_recipe_v1_recipes__name__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z][a-z0-9-]{2,63}$",
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Archive Hosted Recipe",
+        "tags": [
+          "recipes"
+        ]
+      },
+      "get": {
+        "operationId": "get_hosted_recipe_v1_recipes__name__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z][a-z0-9-]{2,63}$",
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Hosted Recipe",
+        "tags": [
+          "recipes"
+        ]
+      }
+    },
+    "/v1/recipes/{name}/versions": {
+      "post": {
+        "operationId": "create_hosted_recipe_version_v1_recipes__name__versions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z][a-z0-9-]{2,63}$",
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecipeVersionCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Hosted Recipe Version",
+        "tags": [
+          "recipes"
+        ]
+      }
+    },
+    "/v1/recipes/{name}/versions/{version}": {
+      "get": {
+        "operationId": "get_hosted_recipe_version_v1_recipes__name__versions__version__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z][a-z0-9-]{2,63}$",
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Hosted Recipe Version",
+        "tags": [
+          "recipes"
         ]
       }
     },

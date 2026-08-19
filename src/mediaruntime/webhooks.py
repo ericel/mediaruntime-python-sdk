@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable, Mapping, Sequence
 from typing import Any, TypeVar, cast
 
 from .errors import WebhookVerificationError
-from .models import WebhookEvent
+from .models import RecipeAcknowledgement, WebhookEvent
 
 HeaderValue = str | Sequence[str] | None
 HandlerResult = TypeVar("HandlerResult")
@@ -123,12 +123,25 @@ class WebhooksClient:
             )
         data = cast(dict[str, Any], parsed)
         status = str(data.get("status") or "UNKNOWN").upper()
+        raw_recipe = data.get("recipe")
+        recipe = (
+            RecipeAcknowledgement(
+                name=str(raw_recipe.get("name") or ""),
+                version=int(raw_recipe.get("version") or 0),
+                reference=str(raw_recipe.get("reference") or ""),
+                built_in=bool(raw_recipe.get("built_in")),
+                sha256=str(raw_recipe.get("sha256") or ""),
+            )
+            if isinstance(raw_recipe, Mapping)
+            else None
+        )
         return WebhookEvent(
             id=event_id,
             job_id=str(data.get("job_id") or ""),
             account_id=data.get("account_id") if isinstance(data.get("account_id"), str) else None,
             status=status,
             type=f"job.{status.lower()}",
+            recipe=recipe,
             data=data,
             raw_body=body,
         )

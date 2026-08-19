@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here.
 
+## 1.2.0 - 2026-08-19
+
+- Add `media.recipes` management for immutable account-scoped hosted recipes.
+- Accept `recipe` and pinned `name@version` references in `jobs.create()` while rejecting
+  inline processing overrides.
+- Preserve the resolved recipe acknowledgement on create receipts and polling details.
+- Pin recipe built-ins, mutation roles, resolution ordering, and public routes in the
+  shared gateway conformance fixture.
+
 ## 1.1.1 - 2026-08-18
 
 - Preserve the gateway's ordered `public_presets` list as `public_presets` instead

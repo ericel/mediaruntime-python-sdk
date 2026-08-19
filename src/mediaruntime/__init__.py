@@ -18,17 +18,20 @@ from .errors import (
 from .jobs import Job, JobsClient, OutputAlias
 from .models import (
     Capabilities,
+    HostedRecipe,
     JobDetails,
     JobPage,
     JobSummary,
     MediaReportResult,
     ModerationResult,
+    RecipeAcknowledgement,
     RetryWebhookResult,
     UploadFileResult,
     UploadTarget,
     WatermarkLogo,
     WebhookEvent,
 )
+from .recipes import RecipesClient
 from .uploads import UploadsClient
 from .webhooks import WebhooksClient
 
@@ -50,10 +53,13 @@ __all__ = [
     "MediaRuntimeError",
     "MediaRuntimeTimeoutError",
     "ModerationResult",
+    "HostedRecipe",
     "NotFoundError",
     "OutputAlias",
     "PermissionDeniedError",
     "RateLimitError",
+    "RecipeAcknowledgement",
+    "RecipesClient",
     "RetryWebhookResult",
     "UploadFileResult",
     "UploadTarget",

@@ -2,7 +2,7 @@
 
 Official synchronous Python client for the MediaRuntime asynchronous media API.
 
-Status: production/stable `1.1.1`, published on PyPI with GitHub trusted publishing.
+Status: production/stable `1.2.0`, published on PyPI with GitHub trusted publishing.
 
 The documented `1.x` public API follows semantic versioning. Breaking changes to public
 imports, arguments, exceptions, or documented response projections require a new major
@@ -54,6 +54,34 @@ Aliases are frozen gateway contracts: `video.web`, `video.streaming`, `video.soc
 `audio.web`, `audio.transcription`, and `image.web`. The gateway materializes them before
 validation, estimation, billing, and persistence. Explicit `{ "type": ..., "preset": ... }`
 output dictionaries remain supported and may be mixed with aliases.
+
+## Hosted recipes
+
+Hosted recipes are immutable, account-scoped versions of a complete outputs, moderation,
+and watermark policy. They let several services and teammates run the same policy without
+copying request configuration.
+
+```python
+available = media.recipes.list()
+
+created = media.recipes.create(
+    name="team-video",
+    description="Default web playback policy",
+    template={"outputs": ["video.web"]},
+)
+
+job = media.jobs.create(
+    source="./launch.mp4",
+    recipe=created.reference,  # team-video@1
+    metadata={"asset_id": "launch-01"},
+)
+```
+
+Use `media.recipes.get(name, version=...)`, `create_version(...)`, and `archive(name)`
+to manage custom policies. Versions are immutable and optimistically locked. Built-ins
+`web-video@1`, `social-video@1`, and `ai-transcription@1` are always available. A recipe
+job cannot also supply inline `outputs`, `moderation`, or `watermark`; the gateway resolves
+it before validation, estimation, billing, idempotency, and dispatch.
 
 HTTP(S) and `gs://` sources are submitted directly. Other strings and `pathlib.Path`
 instances are treated as local files and uploaded through MediaRuntime's signed upload

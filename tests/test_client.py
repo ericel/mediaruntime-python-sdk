@@ -47,7 +47,7 @@ def test_create_maps_source_and_preserves_metadata() -> None:
 
     assert job.id == "job_123"
     assert job.message == "ok"
-    assert __version__ == "1.1.1"
+    assert __version__ == "1.2.0"
     assert seen == {
         "url": "https://mediaruntime.com/v1/jobs",
         "api_key": "sdk_key",
@@ -144,6 +144,139 @@ def test_create_forwards_output_aliases_for_gateway_resolution() -> None:
         "source": "https://cdn.example.com/video.mp4",
         "outputs": ["video.web", "audio.transcription"],
     }
+
+
+def test_create_with_recipe_sends_only_the_reference_and_projects_acknowledgement() -> None:
+    seen: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["body"] = json.loads(request.content)
+        return response(
+            200,
+            {
+                "job_id": "job_recipe",
+                "status": "QUEUED",
+                "recipe": {
+                    "name": "web-video",
+                    "version": 1,
+                    "reference": "web-video@1",
+                    "built_in": True,
+                    "sha256": "a" * 64,
+                },
+            },
+        )
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    job = media.jobs.create(
+        source="https://cdn.example.com/video.mp4",
+        recipe="web-video",
+    )
+
+    assert seen["body"] == {
+        "source": "https://cdn.example.com/video.mp4",
+        "recipe": "web-video",
+    }
+    assert job.recipe is not None
+    assert job.recipe.reference == "web-video@1"
+
+
+def test_recipe_rejects_inline_processing_overrides() -> None:
+    media = MediaRuntime(api_key="sdk_key")
+    with pytest.raises(ValidationError, match="cannot be combined"):
+        media.jobs.create(
+            source="https://cdn.example.com/video.mp4",
+            recipe="web-video",
+            outputs=["video.web"],
+        )
+
+
+def test_hosted_recipe_crud_uses_versioned_gateway_routes() -> None:
+    calls: list[tuple[str, str, object]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content) if request.content else None
+        calls.append((request.method, request.url.path, body))
+        if request.method == "GET" and request.url.path == "/v1/recipes":
+            return response(
+                200,
+                {
+                    "recipes": [
+                        {
+                            "name": "web-video",
+                            "version": 1,
+                            "reference": "web-video@1",
+                            "description": "Web-ready video",
+                            "built_in": True,
+                            "status": "active",
+                            "sha256": "a" * 64,
+                        }
+                    ]
+                },
+            )
+        if request.method == "DELETE":
+            return response(200, {"name": "team-video", "status": "archived", "latest_version": 2})
+        version = 2 if request.url.path.endswith("/versions") else 1
+        return response(
+            201 if request.method == "POST" else 200,
+            {
+                "name": "team-video",
+                "version": version,
+                "reference": f"team-video@{version}",
+                "description": "Team default",
+                "built_in": False,
+                "status": "active",
+                "sha256": "b" * 64,
+                "template": {"outputs": ["video.web"]},
+            },
+        )
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    assert media.recipes.list()[0].reference == "web-video@1"
+    created = media.recipes.create(
+        name="team-video",
+        description="Team default",
+        template={"outputs": ["video.web"]},
+    )
+    second = media.recipes.create_version(
+        "team-video",
+        expected_latest_version=1,
+        template={"outputs": ["video.streaming"]},
+    )
+    fetched = media.recipes.get("team-video", version=2)
+    archived = media.recipes.archive("team-video")
+
+    assert created.version == 1
+    assert second.version == 2
+    assert fetched.template == {"outputs": ["video.web"]}
+    assert archived["status"] == "archived"
+    assert calls == [
+        ("GET", "/v1/recipes", None),
+        (
+            "POST",
+            "/v1/recipes",
+            {
+                "name": "team-video",
+                "description": "Team default",
+                "template": {"outputs": ["video.web"]},
+            },
+        ),
+        (
+            "POST",
+            "/v1/recipes/team-video/versions",
+            {
+                "expected_latest_version": 1,
+                "template": {"outputs": ["video.streaming"]},
+            },
+        ),
+        ("GET", "/v1/recipes/team-video/versions/2", None),
+        ("DELETE", "/v1/recipes/team-video", None),
+    ]
 
 
 def test_generated_key_survives_lost_response_and_in_progress_replay() -> None:
