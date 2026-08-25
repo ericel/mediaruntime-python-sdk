@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased
+
+- Add typed `privacy_redaction` controls for the Premium still-image Preview; video and
+  animated-image redaction remain unavailable and are rejected by the gateway and engine.
+- Document the stable public privacy-report boundary: detector categories and outcomes,
+  ZIP-relative paths, and no vendor/model or private infrastructure metadata.
+- Document and preserve the bounded Audiogram composition controls, caption-free poster,
+  and complete bundle inventory.
+- Add typed `jobs.get_code_detections()` access for `code_detect_v1` reports.
+
+- Add typed `jobs.get_compatibility_report()` access to the versioned
+  `compatibility_report_v1` sidecar.
+- Document and regression-test direct `contact_sheet_v1` request mappings for numbered
+  composite sheets and timestamp metadata.
+
 ## 1.2.0 - 2026-08-19
 
 - Add `media.recipes` management for immutable account-scoped hosted recipes.

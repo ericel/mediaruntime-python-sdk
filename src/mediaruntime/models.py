@@ -1,7 +1,28 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal, TypedDict
+
+PrivacyDetector = Literal["face", "license_plate", "text"]
+
+
+class _PrivacyRedactionOptional(TypedDict, total=False):
+    style: Literal["blur", "pixelate", "solid"]
+    failure_mode: Literal["fail_closed", "report_only"]
+    min_confidence: float
+    sample_interval_sec: float
+    max_frames: int
+    box_padding_ratio: float
+    solid_color: str
+    pixel_block_size: int
+    privacy_strength: Literal["standard", "strong"]
+    include_debug_observations: bool
+
+
+class PrivacyRedactionOptions(_PrivacyRedactionOptional):
+    """Premium Preview accepted on still-image inputs with image outputs only."""
+
+    detectors: list[PrivacyDetector]
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,6 +96,22 @@ class ModerationResult:
 
 @dataclass(frozen=True, slots=True)
 class MediaReportResult:
+    job_id: str
+    report: dict[str, Any] | None
+    download_url: str | None
+    note: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class CompatibilityReportResult:
+    job_id: str
+    report: dict[str, Any] | None
+    download_url: str | None
+    note: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class CodeDetectionResult:
     job_id: str
     report: dict[str, Any] | None
     download_url: str | None

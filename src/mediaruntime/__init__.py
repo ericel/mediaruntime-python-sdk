@@ -18,12 +18,15 @@ from .errors import (
 from .jobs import Job, JobsClient, OutputAlias
 from .models import (
     Capabilities,
+    CodeDetectionResult,
+    CompatibilityReportResult,
     HostedRecipe,
     JobDetails,
     JobPage,
     JobSummary,
     MediaReportResult,
     ModerationResult,
+    PrivacyRedactionOptions,
     RecipeAcknowledgement,
     RetryWebhookResult,
     UploadFileResult,
@@ -38,6 +41,8 @@ from .webhooks import WebhooksClient
 __all__ = [
     "AuthenticationError",
     "Capabilities",
+    "CodeDetectionResult",
+    "CompatibilityReportResult",
     "IdempotencyConflictError",
     "IdempotencyInProgressError",
     "Job",
@@ -53,6 +58,7 @@ __all__ = [
     "MediaRuntimeError",
     "MediaRuntimeTimeoutError",
     "ModerationResult",
+    "PrivacyRedactionOptions",
     "HostedRecipe",
     "NotFoundError",
     "OutputAlias",

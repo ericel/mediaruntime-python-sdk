@@ -12,6 +12,8 @@ from uuid import uuid4
 from ._utils import bool_or_none, int_or_none, object_dict, string_list, string_or_none
 from .errors import JobWaitTimeoutError, ValidationError
 from .models import (
+    CodeDetectionResult,
+    CompatibilityReportResult,
     JobDetails,
     JobPage,
     JobSummary,
@@ -341,6 +343,41 @@ class JobsClient:
             )
         )
         return MediaReportResult(
+            job_id=str(data.get("job_id") or job_id),
+            report=object_dict(data.get("report"))
+            if isinstance(data.get("report"), Mapping)
+            else None,
+            download_url=string_or_none(data.get("download_url")),
+            note=string_or_none(data.get("note")),
+        )
+
+    def get_compatibility_report(self, job_id: str) -> CompatibilityReportResult:
+        data = object_dict(
+            self._transport.request(
+                "GET",
+                f"/jobs/{_job_id(job_id)}/compatibility-report",
+                retry="safe",
+            )
+        )
+        return CompatibilityReportResult(
+            job_id=str(data.get("job_id") or job_id),
+            report=object_dict(data.get("report"))
+            if isinstance(data.get("report"), Mapping)
+            else None,
+            download_url=string_or_none(data.get("download_url")),
+            note=string_or_none(data.get("note")),
+        )
+
+    def get_code_detections(self, job_id: str) -> CodeDetectionResult:
+        """Return the inert QR/barcode detection report for a completed job."""
+        data = object_dict(
+            self._transport.request(
+                "GET",
+                f"/jobs/{_job_id(job_id)}/codes",
+                retry="safe",
+            )
+        )
+        return CodeDetectionResult(
             job_id=str(data.get("job_id") or job_id),
             report=object_dict(data.get("report"))
             if isinstance(data.get("report"), Mapping)

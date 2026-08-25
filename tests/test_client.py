@@ -60,6 +60,161 @@ def test_create_maps_source_and_preserves_metadata() -> None:
     }
 
 
+def test_create_preserves_contact_sheet_contract_fields() -> None:
+    seen: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["body"] = json.loads(request.content)
+        return response(
+            200,
+            {"job_id": "job_sheet", "status": "QUEUED", "tier": "standard", "msg": "ok"},
+        )
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    media.jobs.create(
+        source="https://cdn.example.com/video.mp4",
+        outputs=[
+            {
+                "type": "frames",
+                "preset": "contact_sheet_v1",
+                "contact_sheet": {
+                    "columns": 5,
+                    "rows": 4,
+                    "tile_width": 240,
+                    "tile_height": 135,
+                    "interval_sec": 12,
+                    "start_time_sec": 3,
+                    "duration_sec": 120,
+                    "max_sheets": 3,
+                    "format": "webp",
+                    "quality": 76,
+                },
+            }
+        ],
+    )
+
+    output = seen["body"]["outputs"][0]  # type: ignore[index]
+    assert output["contact_sheet"]["tile_width"] == 240
+    assert output["contact_sheet"]["format"] == "webp"
+
+
+def test_create_preserves_audiogram_contract_fields() -> None:
+    seen: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["body"] = json.loads(request.content)
+        return response(
+            200,
+            {"job_id": "job_audiogram", "status": "QUEUED", "tier": "premium", "msg": "ok"},
+        )
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    media.jobs.create(
+        source="https://cdn.example.com/episode.mp3",
+        outputs=[
+            {
+                "type": "social",
+                "preset": "audiogram_v1",
+                "audiogram": {
+                    "artwork_source": "https://cdn.example.com/cover.png",
+                    "captions_source": "https://cdn.example.com/captions.vtt",
+                    "layout": "portrait",
+                    "artwork_fit": "blurred_background",
+                    "background_color": "#102030",
+                    "waveform_color": "#abcdef",
+                    "waveform_gain": 2.5,
+                    "start_time_sec": 2,
+                    "duration_sec": 45,
+                    "fps": 24,
+                    "burn_captions": True,
+                    "caption_position": "bottom",
+                    "caption_font_scale": 1.1,
+                    "normalize_audio": True,
+                    "loudness_target_lufs": -18,
+                },
+            }
+        ],
+    )
+
+    output = seen["body"]["outputs"][0]  # type: ignore[index]
+    assert output["audiogram"] == {
+        "artwork_source": "https://cdn.example.com/cover.png",
+        "captions_source": "https://cdn.example.com/captions.vtt",
+        "layout": "portrait",
+        "artwork_fit": "blurred_background",
+        "background_color": "#102030",
+        "waveform_color": "#abcdef",
+        "waveform_gain": 2.5,
+        "start_time_sec": 2,
+        "duration_sec": 45,
+        "fps": 24,
+        "burn_captions": True,
+        "caption_position": "bottom",
+        "caption_font_scale": 1.1,
+        "normalize_audio": True,
+        "loudness_target_lufs": -18,
+    }
+
+
+def test_create_preserves_privacy_redaction_contract_fields() -> None:
+    seen: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["body"] = json.loads(request.content)
+        return response(
+            200,
+            {"job_id": "job_privacy", "status": "QUEUED", "tier": "premium", "msg": "ok"},
+        )
+
+    media = MediaRuntime(
+        api_key="sdk_key",
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    media.jobs.create(
+        source="https://cdn.example.com/people.mp4",
+        outputs=[
+            {
+                "type": "mp4",
+                "preset": "mp4_720p_h264_aac",
+                "privacy_redaction": {
+                    "detectors": ["face", "license_plate", "text"],
+                    "style": "pixelate",
+                    "failure_mode": "fail_closed",
+                    "min_confidence": 0.72,
+                    "sample_interval_sec": 1.5,
+                    "max_frames": 24,
+                    "box_padding_ratio": 0.2,
+                    "solid_color": "#102030",
+                    "pixel_block_size": 32,
+                    "privacy_strength": "strong",
+                    "include_debug_observations": True,
+                },
+            }
+        ],
+    )
+
+    output = seen["body"]["outputs"][0]  # type: ignore[index]
+    assert output["privacy_redaction"] == {
+        "detectors": ["face", "license_plate", "text"],
+        "style": "pixelate",
+        "failure_mode": "fail_closed",
+        "min_confidence": 0.72,
+        "sample_interval_sec": 1.5,
+        "max_frames": 24,
+        "box_padding_ratio": 0.2,
+        "solid_color": "#102030",
+        "pixel_block_size": 32,
+        "privacy_strength": "strong",
+        "include_debug_observations": True,
+    }
+
+
 def test_create_sends_canonical_source_for_every_batch_input() -> None:
     seen: dict[str, object] = {}
 
@@ -540,7 +695,7 @@ def test_local_source_uses_signed_upload_without_api_key_leak(tmp_path: Path) ->
     assert "file_url" not in submitted
 
 
-def test_wait_and_moderation_projection() -> None:
+def test_wait_moderation_and_report_projections() -> None:
     status_reads = 0
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -552,6 +707,33 @@ def test_wait_and_moderation_projection() -> None:
                     "verdict": "review",
                     "flagged_checks": ["violence"],
                     "requested_checks": ["violence"],
+                },
+            )
+        if request.url.path.endswith("/compatibility-report"):
+            return response(
+                200,
+                {
+                    "job_id": "job_wait",
+                    "report": {
+                        "rule_set": {"version": "2026-08-20"},
+                        "profiles": [],
+                    },
+                    "download_url": None,
+                    "note": None,
+                },
+            )
+        if request.url.path.endswith("/codes"):
+            return response(
+                200,
+                {
+                    "job_id": "job_wait",
+                    "report": {
+                        "schema_version": 1,
+                        "payload_is_untrusted": True,
+                        "detections": [{"symbology": "QRCode", "text": "<b>not html</b>"}],
+                    },
+                    "download_url": None,
+                    "note": None,
                 },
             )
         status_reads += 1
@@ -570,10 +752,17 @@ def test_wait_and_moderation_projection() -> None:
     )
     completed = media.jobs.wait("job_wait", timeout=1, initial_delay=0, max_delay=0)
     moderation = media.jobs.get_moderation("job_wait")
+    compatibility = media.jobs.get_compatibility_report("job_wait")
+    codes = media.jobs.get_code_detections("job_wait")
 
     assert completed.status == "COMPLETED"
     assert completed.bundle["download_url"] == "https://cdn.example/bundle"
     assert moderation.flagged_checks == ["violence"]
+    assert compatibility.report is not None
+    assert compatibility.report["rule_set"]["version"] == "2026-08-20"
+    assert codes.report is not None
+    assert codes.report["payload_is_untrusted"] is True
+    assert codes.report["detections"][0]["text"] == "<b>not html</b>"
 
 
 def test_capabilities_do_not_require_an_api_key() -> None:

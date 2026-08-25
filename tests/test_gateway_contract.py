@@ -53,6 +53,17 @@ def test_openapi_and_conformance_freeze_canonical_source_fields() -> None:
     assert not any(name.startswith("Internal") for name in schemas)
     assert canonical == "source"
     assert canonical in schemas["CreateJobRequest"]["properties"]
+    assert "contact_sheet" in schemas["TranscodeOutput"]["properties"]
+    assert schemas["ContactSheetFormat"]["enum"] == ["jpg", "png", "webp"]
+    assert schemas["ContactSheetConfig"]["properties"]["max_sheets"]["maximum"] == 20
+    rendition = schemas["ImageRendition"]["properties"]
+    assert rendition["max_bytes"]["anyOf"][0]["minimum"] == 256
+    assert rendition["max_bytes"]["anyOf"][0]["maximum"] == 100_000_000
+    assert rendition["min_quality"]["minimum"] == 1
+    assert rendition["min_quality"]["maximum"] == 100
+    assert "privacy_redaction" in schemas["TranscodeOutput"]["properties"]
+    assert schemas["PrivacyDetector"]["enum"] == ["face", "license_plate", "text"]
+    assert schemas["PrivacyRedactionConfig"]["properties"]["max_frames"]["maximum"] == 18000
     assert canonical in schemas["JobInput"]["properties"]
     assert legacy in schemas["CreateJobRequest"]["properties"]
     assert legacy in schemas["JobInput"]["properties"]

@@ -102,6 +102,220 @@ batch = media.jobs.create(
 )
 ```
 
+## Animated WebP and APNG
+
+Animated images use `type: "image"` with a timeline-specific Premium preset. The Python
+SDK accepts the gateway request fields directly:
+
+```python
+job = media.jobs.create(
+    source="./launch.mp4",
+    outputs=[
+        {
+            "type": "image",
+            "preset": "image_animated_webp_v1",
+            "animation": {
+                "width": 720,
+                "fps": 15,
+                "start_time": 0,
+                "duration": 6,
+                "loop": 0,
+                "quality": 80,
+            },
+        }
+    ],
+)
+```
+
+Use `image_animated_apng_v1` for lossless animated PNG. `loop: 0` repeats forever;
+`quality` applies only to WebP. Watermarking these animation presets is rejected until
+that combination is explicitly supported.
+
+## BlurHash, ThumbHash, and LQIP
+
+The Standard `image_placeholders_v1` preset accepts a still image or video and returns
+`placeholders.json` plus a byte-bounded `lqip.webp` in the canonical ZIP bundle:
+
+```python
+job = media.jobs.create(
+    source="./product-photo.png",
+    outputs=[
+        {
+            "type": "image",
+            "preset": "image_placeholders_v1",
+            "placeholders": {
+                "max_dimension": 32,
+                "source_time_sec": 0,
+                "lqip_quality": 50,
+                "lqip_max_bytes": 4096,
+            },
+        }
+    ],
+)
+```
+
+`placeholders.json` contains standard BlurHash and base64 ThumbHash values, explicit
+source and placeholder dimensions, source format, requested frame time, and an
+alpha-aware dominant colour. `source_time_sec` defaults to the first frame at `0`; no
+representative-frame selection is performed. The job
+fails instead of silently exceeding `lqip_max_bytes`; watermarking this preset is
+rejected.
+
+## Audiograms
+
+Compose timed audio with supplied artwork, a generated waveform, and optional supplied
+captions using the Premium `audiogram_v1` preset:
+
+```python
+job = media.jobs.create(
+    source="./episode.mp3",
+    outputs=[
+        {
+            "type": "social",
+            "preset": "audiogram_v1",
+            "audiogram": {
+                "artwork_source": "https://cdn.example.com/podcast/cover.png",
+                "captions_source": "https://cdn.example.com/podcast/episode.vtt",
+                "burn_captions": True,
+                "layout": "square",
+                "artwork_fit": "blurred_background",
+                "background_color": "#101827",
+                "waveform_color": "#5B5CFF",
+                "waveform_gain": 2,
+                "caption_position": "bottom",
+                "caption_font_scale": 1,
+                "normalize_audio": True,
+                "loudness_target_lufs": -16,
+                "duration_sec": 60,
+                "fps": 30,
+            },
+        }
+    ],
+)
+```
+
+Artwork must be PNG, JPEG, or WebP up to 10 MB; captions must be UTF-8 SRT or VTT up to
+2 MB. Artwork can be contained, covered, or preserved over a blurred fill. Waveforms and
+captions use separate regions in a reserved high-contrast safe band; `top` and `bottom`
+select the caption strip and never place text over caller artwork. Multi-line cues scale down
+adaptively, and the caption-free poster is sampled after waveform activity begins. Loudness
+normalization is optional and reports its target plus measured input/output values. The
+ZIP contains `audiogram.mp4`, a caption-free `poster.jpg`, `audiogram.json`, and
+`audiogram.waveform.json`. Account watermarking and speech-generated subtitles cannot be
+combined with this preset in v1.
+
+## Composite video contact sheets
+
+Use the Standard `contact_sheet_v1` preset to produce numbered review grids plus
+`contact_sheet.json`, which maps every tile to its exact source timestamp:
+
+```python
+job = media.jobs.create(
+    source="./interview.mp4",
+    outputs=[
+        {
+            "type": "frames",
+            "preset": "contact_sheet_v1",
+            "contact_sheet": {
+                "columns": 5,
+                "rows": 4,
+                "tile_width": 240,
+                "tile_height": 135,
+                "interval_sec": 12,
+                "start_time_sec": 0,
+                "duration_sec": 0,  # remaining video
+                "max_sheets": 3,
+                "format": "jpg",
+                "quality": 80,
+            },
+        }
+    ],
+)
+```
+
+Billing is one flat processing unit per produced composite sheet. Watermarking this
+preset is rejected. `quality` applies to JPG and WebP; PNG is lossless.
+
+For JPG and WebP renditions, `max_bytes` is a hard final-file ceiling. The engine searches
+between `quality` and `min_quality`, verifies the encoded file, and fails instead of
+returning an oversized artifact:
+
+```python
+job = media.jobs.create(
+    source="./product-photo.png",
+    outputs=[
+        {
+            "type": "image",
+            "preset": "image_multi_v1",
+            "images": [
+                {
+                    "width": 1280,
+                    "height": 720,
+                    "mode": "cover",
+                    "format": "webp",
+                    "quality": 86,
+                    "max_bytes": 200_000,
+                    "min_quality": 35,
+                }
+            ],
+        }
+    ],
+)
+```
+
+The ZIP includes `image_size_limits.json` with the selected quality, final byte count,
+and bounded attempt history. PNG and AVIF do not currently accept `max_bytes`.
+
+## Privacy redaction
+
+Privacy redaction is an explicit Premium Preview for still-image inputs and image outputs.
+Video and animated-image requests are rejected before billing and execution.
+
+```python
+job = media.jobs.create(
+    source="./team-photo.jpg",
+    outputs=[
+        {
+            "type": "image",
+            "preset": "image_multi_v1",
+            "images": [
+                {
+                    "width": 1280,
+                    "height": 720,
+                    "mode": "fit",
+                    "format": "png",
+                    "quality": 80,
+                }
+            ],
+            "privacy_redaction": {
+                "detectors": ["face", "license_plate", "text"],
+                "style": "blur",
+                "failure_mode": "fail_closed",
+                "min_confidence": 0.65,
+                "sample_interval_sec": 0.2,
+                "max_frames": 1800,
+                "box_padding_ratio": 0.15,
+                "privacy_strength": "strong",
+                "pixel_block_size": 24,
+                "include_debug_observations": False,
+            },
+        }
+    ],
+)
+```
+
+Use `report_only` only when an unsafe or incomplete image is acceptable for review.
+`fail_closed` stops on detector failure, unresolved ambiguity, bounded-limit truncation,
+or a residual that remediation cannot eliminate. Recognizable residuals under blur or
+pixelation may be escalated to bounded opaque masks and verified again. The ZIP includes
+the redacted image and `privacy_redaction.json` schema v3. Public metadata reports stable
+detector categories, counts, verification outcomes, and ZIP-relative
+`report_bundle_path` and `output_bundle_paths`; it does not expose detector vendors, model
+identities, model or worker paths, bucket names, or raw OCR text. Automated recall is not
+exhaustive, so `coverage_verified` remains false and human review is required. Per-sample
+observations are included only when
+`include_debug_observations` is true.
+
 ## Moderation
 
 Choose observational `report` moderation or fail-closed `block` enforcement when creating
@@ -124,6 +338,40 @@ result = job.wait()
 moderation = media.jobs.get_moderation(result.id)
 print(result.status, moderation.verdict, moderation.flagged_checks)
 ```
+
+For an actionable, versioned delivery verdict, request the compatibility sidecar and
+read it directly after completion (it also remains in the ZIP bundle):
+
+```python
+job = media.jobs.create(
+    source="https://cdn.example.com/video.webm",
+    outputs=[{"type": "image", "preset": "compatibility_report_v1"}],
+)
+result = job.wait()
+compatibility = media.jobs.get_compatibility_report(result.id)
+print(compatibility.report["profiles"] if compatibility.report else None)
+```
+
+To extract QR codes and barcodes from an image, sampled video frames, or an audio
+file's embedded cover artwork, request `code_detect_v1` and read the report:
+
+```python
+job = media.jobs.create(
+    source="./label.png",
+    outputs=[{"type": "frames", "preset": "code_detect_v1"}],
+)
+job = media.jobs.wait(job.id)
+codes = media.jobs.get_code_detections(job.id)
+print(codes.report["detections"] if codes.report else [])
+```
+
+The engine samples the first visual frame and then every 10 seconds, up to 12
+frames and 16 unique codes per frame. Plain audio without embedded artwork is
+rejected. Decoded values are untrusted input: render them as text and never
+automatically follow a detected URL.
+
+The five named profiles are conservative, versioned guidance rather than exhaustive
+certification of every browser, device, editor, or social platform version.
 
 Explicit output mappings support MPEG-DASH and VP9/WebM:
 

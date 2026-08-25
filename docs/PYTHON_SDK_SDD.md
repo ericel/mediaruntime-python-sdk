@@ -18,7 +18,7 @@ billing, tier, preset, and compatibility policy remain server-owned.
 
 ```text
 MediaRuntime
-├── jobs.create/get/list/wait/get_moderation/get_media_report/retry_webhook
+├── jobs.create/get/list/wait/get_moderation/get_media_report/get_compatibility_report/retry_webhook
 ├── uploads.create_target/upload_file
 ├── capabilities.retrieve
 ├── recipes.list/get/create/create_version/archive

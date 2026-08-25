@@ -1,6 +1,62 @@
 {
   "components": {
     "schemas": {
+      "AnimationConfig": {
+        "properties": {
+          "duration": {
+            "default": 6.0,
+            "exclusiveMinimum": 0.0,
+            "maximum": 30.0,
+            "title": "Duration",
+            "type": "number"
+          },
+          "fps": {
+            "default": 15.0,
+            "exclusiveMinimum": 0.0,
+            "maximum": 30.0,
+            "title": "Fps",
+            "type": "number"
+          },
+          "loop": {
+            "default": 0,
+            "description": "0 means infinite",
+            "maximum": 65535.0,
+            "minimum": 0.0,
+            "title": "Loop",
+            "type": "integer"
+          },
+          "quality": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional animated WebP quality. Do not send this field for lossless APNG.",
+            "title": "Quality"
+          },
+          "start_time": {
+            "default": 0.0,
+            "maximum": 604800.0,
+            "minimum": 0.0,
+            "title": "Start Time",
+            "type": "number"
+          },
+          "width": {
+            "default": 720,
+            "maximum": 1920.0,
+            "minimum": 1.0,
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "title": "AnimationConfig",
+        "type": "object"
+      },
       "AudioOptions": {
         "properties": {
           "bitrate_bps": {
@@ -33,6 +89,221 @@
         },
         "title": "AudioOptions",
         "type": "object"
+      },
+      "AudiogramArtworkFit": {
+        "enum": [
+          "contain",
+          "cover",
+          "blurred_background"
+        ],
+        "title": "AudiogramArtworkFit",
+        "type": "string"
+      },
+      "AudiogramCaptionPosition": {
+        "enum": [
+          "top",
+          "bottom"
+        ],
+        "title": "AudiogramCaptionPosition",
+        "type": "string"
+      },
+      "AudiogramConfig": {
+        "additionalProperties": false,
+        "description": "Bounded public controls for composing audio, artwork, and captions.",
+        "properties": {
+          "artwork_fit": {
+            "$ref": "#/components/schemas/AudiogramArtworkFit",
+            "default": "blurred_background"
+          },
+          "artwork_source": {
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Artwork Source",
+            "type": "string"
+          },
+          "background_color": {
+            "default": "#101827",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "title": "Background Color",
+            "type": "string"
+          },
+          "burn_captions": {
+            "default": false,
+            "title": "Burn Captions",
+            "type": "boolean"
+          },
+          "caption_font_scale": {
+            "default": 1.0,
+            "maximum": 1.5,
+            "minimum": 0.75,
+            "title": "Caption Font Scale",
+            "type": "number"
+          },
+          "caption_position": {
+            "$ref": "#/components/schemas/AudiogramCaptionPosition",
+            "default": "bottom"
+          },
+          "captions_source": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Captions Source"
+          },
+          "duration_sec": {
+            "default": 60.0,
+            "exclusiveMinimum": 0.0,
+            "maximum": 300.0,
+            "title": "Duration Sec",
+            "type": "number"
+          },
+          "fps": {
+            "default": 30,
+            "maximum": 30.0,
+            "minimum": 15.0,
+            "title": "Fps",
+            "type": "integer"
+          },
+          "layout": {
+            "$ref": "#/components/schemas/AudiogramLayout",
+            "default": "square"
+          },
+          "loudness_target_lufs": {
+            "default": -16.0,
+            "maximum": -12.0,
+            "minimum": -24.0,
+            "title": "Loudness Target Lufs",
+            "type": "number"
+          },
+          "normalize_audio": {
+            "default": false,
+            "title": "Normalize Audio",
+            "type": "boolean"
+          },
+          "start_time_sec": {
+            "default": 0.0,
+            "maximum": 604800.0,
+            "minimum": 0.0,
+            "title": "Start Time Sec",
+            "type": "number"
+          },
+          "waveform_color": {
+            "default": "#5B5CFF",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "title": "Waveform Color",
+            "type": "string"
+          },
+          "waveform_gain": {
+            "default": 2.0,
+            "maximum": 4.0,
+            "minimum": 0.5,
+            "title": "Waveform Gain",
+            "type": "number"
+          }
+        },
+        "required": [
+          "artwork_source"
+        ],
+        "title": "AudiogramConfig",
+        "type": "object"
+      },
+      "AudiogramLayout": {
+        "enum": [
+          "square",
+          "portrait",
+          "landscape"
+        ],
+        "title": "AudiogramLayout",
+        "type": "string"
+      },
+      "ContactSheetConfig": {
+        "properties": {
+          "columns": {
+            "default": 4,
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Columns",
+            "type": "integer"
+          },
+          "duration_sec": {
+            "default": 0.0,
+            "description": "Selected source duration; zero means the remaining video.",
+            "maximum": 21600.0,
+            "minimum": 0.0,
+            "title": "Duration Sec",
+            "type": "number"
+          },
+          "format": {
+            "$ref": "#/components/schemas/ContactSheetFormat",
+            "default": "jpg"
+          },
+          "interval_sec": {
+            "default": 10.0,
+            "maximum": 3600.0,
+            "minimum": 0.5,
+            "title": "Interval Sec",
+            "type": "number"
+          },
+          "max_sheets": {
+            "default": 4,
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Max Sheets",
+            "type": "integer"
+          },
+          "quality": {
+            "default": 80,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Quality",
+            "type": "integer"
+          },
+          "rows": {
+            "default": 4,
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Rows",
+            "type": "integer"
+          },
+          "start_time_sec": {
+            "default": 0.0,
+            "maximum": 604800.0,
+            "minimum": 0.0,
+            "title": "Start Time Sec",
+            "type": "number"
+          },
+          "tile_height": {
+            "default": 180,
+            "maximum": 640.0,
+            "minimum": 36.0,
+            "title": "Tile Height",
+            "type": "integer"
+          },
+          "tile_width": {
+            "default": 320,
+            "maximum": 640.0,
+            "minimum": 64.0,
+            "title": "Tile Width",
+            "type": "integer"
+          }
+        },
+        "title": "ContactSheetConfig",
+        "type": "object"
+      },
+      "ContactSheetFormat": {
+        "enum": [
+          "jpg",
+          "png",
+          "webp"
+        ],
+        "title": "ContactSheetFormat",
+        "type": "string"
       },
       "CreateJobRequest": {
         "properties": {
@@ -238,6 +509,28 @@
             "maximum": 16384.0,
             "minimum": 1.0,
             "title": "Height",
+            "type": "integer"
+          },
+          "max_bytes": {
+            "anyOf": [
+              {
+                "maximum": 100000000.0,
+                "minimum": 256.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional hard encoded-file ceiling for JPG/WebP. The job fails rather than returning an oversized rendition.",
+            "title": "Max Bytes"
+          },
+          "min_quality": {
+            "default": 1,
+            "description": "Lowest quality the bounded search may use when max_bytes is set.",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Min Quality",
             "type": "integer"
           },
           "mode": {
@@ -1428,6 +1721,149 @@
         "title": "OutputType",
         "type": "string"
       },
+      "PlaceholderConfig": {
+        "properties": {
+          "lqip_max_bytes": {
+            "default": 4096,
+            "maximum": 16384.0,
+            "minimum": 256.0,
+            "title": "Lqip Max Bytes",
+            "type": "integer"
+          },
+          "lqip_quality": {
+            "default": 50,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Lqip Quality",
+            "type": "integer"
+          },
+          "max_dimension": {
+            "default": 32,
+            "maximum": 100.0,
+            "minimum": 8.0,
+            "title": "Max Dimension",
+            "type": "integer"
+          },
+          "source_time_sec": {
+            "default": 0.0,
+            "maximum": 604800.0,
+            "minimum": 0.0,
+            "title": "Source Time Sec",
+            "type": "number"
+          }
+        },
+        "title": "PlaceholderConfig",
+        "type": "object"
+      },
+      "PrivacyDetector": {
+        "enum": [
+          "face",
+          "license_plate",
+          "text"
+        ],
+        "title": "PrivacyDetector",
+        "type": "string"
+      },
+      "PrivacyFailureMode": {
+        "enum": [
+          "fail_closed",
+          "report_only"
+        ],
+        "title": "PrivacyFailureMode",
+        "type": "string"
+      },
+      "PrivacyRedactionConfig": {
+        "additionalProperties": false,
+        "description": "Explicit, bounded controls for automated visual privacy redaction.",
+        "properties": {
+          "box_padding_ratio": {
+            "default": 0.15,
+            "maximum": 0.5,
+            "minimum": 0.0,
+            "title": "Box Padding Ratio",
+            "type": "number"
+          },
+          "detectors": {
+            "items": {
+              "$ref": "#/components/schemas/PrivacyDetector"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Detectors",
+            "type": "array"
+          },
+          "failure_mode": {
+            "$ref": "#/components/schemas/PrivacyFailureMode",
+            "default": "fail_closed"
+          },
+          "include_debug_observations": {
+            "default": false,
+            "title": "Include Debug Observations",
+            "type": "boolean"
+          },
+          "max_frames": {
+            "default": 1800,
+            "maximum": 18000.0,
+            "minimum": 1.0,
+            "title": "Max Frames",
+            "type": "integer"
+          },
+          "min_confidence": {
+            "default": 0.6,
+            "maximum": 0.99,
+            "minimum": 0.3,
+            "title": "Min Confidence",
+            "type": "number"
+          },
+          "pixel_block_size": {
+            "default": 24,
+            "maximum": 128.0,
+            "minimum": 4.0,
+            "title": "Pixel Block Size",
+            "type": "integer"
+          },
+          "privacy_strength": {
+            "default": "strong",
+            "enum": [
+              "standard",
+              "strong"
+            ],
+            "title": "Privacy Strength",
+            "type": "string"
+          },
+          "sample_interval_sec": {
+            "default": 0.2,
+            "maximum": 30.0,
+            "minimum": 0.1,
+            "title": "Sample Interval Sec",
+            "type": "number"
+          },
+          "solid_color": {
+            "default": "#000000",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "title": "Solid Color",
+            "type": "string"
+          },
+          "style": {
+            "$ref": "#/components/schemas/PrivacyRedactionStyle",
+            "default": "blur"
+          }
+        },
+        "required": [
+          "detectors"
+        ],
+        "title": "PrivacyRedactionConfig",
+        "type": "object"
+      },
+      "PrivacyRedactionStyle": {
+        "enum": [
+          "blur",
+          "pixelate",
+          "solid"
+        ],
+        "title": "PrivacyRedactionStyle",
+        "type": "string"
+      },
       "RecipeCreateRequest": {
         "properties": {
           "description": {
@@ -1652,10 +2088,40 @@
       },
       "TranscodeOutput": {
         "properties": {
+          "animation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnimationConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "audio": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/AudioOptions"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "audiogram": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AudiogramConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contact_sheet": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContactSheetConfig"
               },
               {
                 "type": "null"
@@ -1699,6 +2165,16 @@
             ],
             "title": "Path Suffix"
           },
+          "placeholders": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlaceholderConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "poster_format": {
             "$ref": "#/components/schemas/ImageFormat",
             "default": "jpg"
@@ -1721,6 +2197,17 @@
               }
             ],
             "title": "Preset"
+          },
+          "privacy_redaction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRedactionConfig"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Preview: automated privacy redaction for still-image inputs and image outputs only. Video and animated-image redaction are not available."
           },
           "remove_bg": {
             "default": false,
@@ -2456,6 +2943,108 @@
           }
         },
         "summary": "Download Job Bundle",
+        "tags": [
+          "App Routes"
+        ]
+      }
+    },
+    "/v1/jobs/{job_id}/codes": {
+      "get": {
+        "description": "Bounded QR/barcode detections produced by code_detect_v1.\n\nDecoded payloads are untrusted data. Clients must render them as text and must not\nautomatically navigate to URLs found in a code. Evidence frames and codes.json also\nremain in the canonical ZIP bundle.",
+        "operationId": "get_job_code_detections_v1_jobs__job_id__codes_get",
+        "parameters": [
+          {
+            "description": "The ID of the job to inspect",
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the job to inspect",
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Job Code Detections",
+        "tags": [
+          "App Routes"
+        ]
+      }
+    },
+    "/v1/jobs/{job_id}/compatibility-report": {
+      "get": {
+        "description": "The versioned compatibility verdict produced by compatibility_report_v1.\n\nThe report remains part of the canonical ZIP bundle. This account-scoped endpoint\nexposes the small JSON result directly for dashboards and automated decisions.",
+        "operationId": "get_job_compatibility_report_v1_jobs__job_id__compatibility_report_get",
+        "parameters": [
+          {
+            "description": "The ID of the job to inspect",
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the job to inspect",
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Job Compatibility Report",
         "tags": [
           "App Routes"
         ]
