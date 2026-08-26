@@ -57,6 +57,30 @@
         "title": "AnimationConfig",
         "type": "object"
       },
+      "ArchivedRecipeResponse": {
+        "properties": {
+          "latest_version": {
+            "title": "Latest Version",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "const": "archived",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "status",
+          "latest_version"
+        ],
+        "title": "ArchivedRecipeResponse",
+        "type": "object"
+      },
       "AudioOptions": {
         "properties": {
           "bitrate_bps": {
@@ -222,6 +246,115 @@
         "title": "AudiogramLayout",
         "type": "string"
       },
+      "CapabilitiesResponse": {
+        "properties": {
+          "capabilities": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Capabilities",
+            "type": "object"
+          },
+          "features": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Features",
+            "type": "object"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "output_aliases": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/OutputAliasCapability"
+            },
+            "title": "Output Aliases",
+            "type": "object"
+          },
+          "output_types": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Output Types",
+            "type": "object"
+          },
+          "preset_overrides": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Preset Overrides",
+            "type": "object"
+          },
+          "preset_requirement_replacements": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Preset Requirement Replacements",
+            "type": "object"
+          },
+          "presets": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PresetCapability"
+            },
+            "title": "Presets",
+            "type": "object"
+          },
+          "public_presets": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Public Presets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "capabilities",
+          "output_types",
+          "preset_overrides",
+          "preset_requirement_replacements",
+          "presets",
+          "public_presets",
+          "features",
+          "output_aliases",
+          "notes"
+        ],
+        "title": "CapabilitiesResponse",
+        "type": "object"
+      },
+      "CompletedWebhook": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TerminalWebhook"
+          },
+          {
+            "properties": {
+              "status": {
+                "const": "COMPLETED",
+                "type": "string"
+              }
+            },
+            "required": [
+              "completedAt"
+            ],
+            "type": "object"
+          }
+        ]
+      },
       "ContactSheetConfig": {
         "properties": {
           "columns": {
@@ -306,6 +439,66 @@
         "type": "string"
       },
       "CreateJobRequest": {
+        "description": "Create one asynchronous media job. Choose exactly one input form: source, the legacy file_url field, or inputs for a batch. Choose either a hosted recipe or explicit processing options. Terminal events are sent to the account webhook destination configured in MediaRuntime.",
+        "oneOf": [
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "file_url"
+                  ]
+                },
+                {
+                  "required": [
+                    "inputs"
+                  ]
+                }
+              ]
+            },
+            "required": [
+              "source"
+            ]
+          },
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "source"
+                  ]
+                },
+                {
+                  "required": [
+                    "inputs"
+                  ]
+                }
+              ]
+            },
+            "required": [
+              "file_url"
+            ]
+          },
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "source"
+                  ]
+                },
+                {
+                  "required": [
+                    "file_url"
+                  ]
+                }
+              ]
+            },
+            "required": [
+              "inputs"
+            ]
+          }
+        ],
         "properties": {
           "file_url": {
             "anyOf": [
@@ -420,23 +613,29 @@
               }
             ],
             "description": "Optional premium watermark request; overlays the account's logo onto every output."
-          },
-          "webhook_url": {
-            "anyOf": [
-              {
-                "maxLength": 2048,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Webhook Url"
           }
         },
         "title": "CreateJobRequest",
         "type": "object"
+      },
+      "FailedWebhook": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TerminalWebhook"
+          },
+          {
+            "properties": {
+              "status": {
+                "const": "FAILED",
+                "type": "string"
+              }
+            },
+            "required": [
+              "failedAt"
+            ],
+            "type": "object"
+          }
+        ]
       },
       "GifPreviewConfig": {
         "properties": {
@@ -488,6 +687,75 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HostedRecipeListResponse": {
+        "properties": {
+          "recipes": {
+            "items": {
+              "$ref": "#/components/schemas/HostedRecipeResponse"
+            },
+            "title": "Recipes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "recipes"
+        ],
+        "title": "HostedRecipeListResponse",
+        "type": "object"
+      },
+      "HostedRecipeResponse": {
+        "properties": {
+          "built_in": {
+            "title": "Built In",
+            "type": "boolean"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "template": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecipeTemplate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "version",
+          "reference",
+          "description",
+          "built_in",
+          "status",
+          "sha256"
+        ],
+        "title": "HostedRecipeResponse",
         "type": "object"
       },
       "ImageFormat": {
@@ -1318,6 +1586,54 @@
         "title": "JobModerationJudge",
         "type": "object"
       },
+      "JobReportResponse": {
+        "description": "Small report envelope shared by the direct analysis-result endpoints.",
+        "properties": {
+          "download_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Download Url"
+          },
+          "job_id": {
+            "title": "Job Id",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "report": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report"
+          }
+        },
+        "required": [
+          "job_id"
+        ],
+        "title": "JobReportResponse",
+        "type": "object"
+      },
       "JobResponse": {
         "properties": {
           "job_id": {
@@ -1706,6 +2022,44 @@
         "title": "ModerationMode",
         "type": "string"
       },
+      "OutputAliasCapability": {
+        "description": "A stable alias and the complete output recipe it materializes.",
+        "properties": {
+          "artifacts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Artifacts",
+            "type": "array"
+          },
+          "output": {
+            "additionalProperties": true,
+            "title": "Output",
+            "type": "object"
+          },
+          "preset": {
+            "title": "Preset",
+            "type": "string"
+          },
+          "tier": {
+            "title": "Tier",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "preset",
+          "tier",
+          "artifacts",
+          "output"
+        ],
+        "title": "OutputAliasCapability",
+        "type": "object"
+      },
       "OutputType": {
         "enum": [
           "mp4",
@@ -1720,6 +2074,26 @@
         ],
         "title": "OutputType",
         "type": "string"
+      },
+      "PartialWebhook": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TerminalWebhook"
+          },
+          {
+            "properties": {
+              "status": {
+                "const": "PARTIAL",
+                "type": "string"
+              }
+            },
+            "required": [
+              "finishedAt",
+              "error"
+            ],
+            "type": "object"
+          }
+        ]
       },
       "PlaceholderConfig": {
         "properties": {
@@ -1753,6 +2127,90 @@
           }
         },
         "title": "PlaceholderConfig",
+        "type": "object"
+      },
+      "PresetCapability": {
+        "description": "One preset entry returned by the public capability catalogue.",
+        "properties": {
+          "artifacts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Artifacts",
+            "type": "array"
+          },
+          "base_tier": {
+            "title": "Base Tier",
+            "type": "string"
+          },
+          "codec": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Codec"
+          },
+          "container": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Container"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "example": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Example"
+          },
+          "output_type": {
+            "title": "Output Type",
+            "type": "string"
+          },
+          "parameterized": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parameterized"
+          },
+          "source_kinds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Source Kinds",
+            "type": "array"
+          }
+        },
+        "required": [
+          "output_type",
+          "source_kinds",
+          "base_tier",
+          "description",
+          "artifacts"
+        ],
+        "title": "PresetCapability",
         "type": "object"
       },
       "PrivacyDetector": {
@@ -1960,6 +2418,58 @@
         "title": "RecipeVersionCreateRequest",
         "type": "object"
       },
+      "RejectedWebhook": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TerminalWebhook"
+          },
+          {
+            "properties": {
+              "status": {
+                "const": "REJECTED",
+                "type": "string"
+              }
+            },
+            "required": [
+              "rejectedAt"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "SandboxSessionResponse": {
+        "properties": {
+          "account_id": {
+            "title": "Account Id",
+            "type": "string"
+          },
+          "account_status": {
+            "title": "Account Status",
+            "type": "string"
+          },
+          "can_run": {
+            "title": "Can Run",
+            "type": "boolean"
+          },
+          "expires_in": {
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "sandbox_token": {
+            "title": "Sandbox Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sandbox_token",
+          "expires_in",
+          "account_status",
+          "account_id",
+          "can_run"
+        ],
+        "title": "SandboxSessionResponse",
+        "type": "object"
+      },
       "SourceUrl": {
         "additionalProperties": false,
         "description": "The first extensible source object; other source kinds remain reserved.",
@@ -2028,6 +2538,73 @@
         ],
         "title": "SubtitleFormat",
         "type": "string"
+      },
+      "TerminalWebhook": {
+        "additionalProperties": true,
+        "properties": {
+          "account_id": {
+            "type": "string"
+          },
+          "billing": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "delivery": {
+            "$ref": "#/components/schemas/WebhookDelivery"
+          },
+          "error": {
+            "$ref": "#/components/schemas/WebhookError"
+          },
+          "event_id": {
+            "type": "string"
+          },
+          "failedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "finishedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "job_id": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "rejectedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "COMPLETED",
+              "FAILED",
+              "REJECTED",
+              "PARTIAL"
+            ],
+            "type": "string"
+          },
+          "usage": {
+            "additionalProperties": true,
+            "type": "object"
+          }
+        },
+        "required": [
+          "event_id",
+          "job_id",
+          "account_id",
+          "status",
+          "billing",
+          "meta",
+          "delivery"
+        ],
+        "type": "object"
       },
       "ThumbnailConfig": {
         "properties": {
@@ -2213,17 +2790,6 @@
             "default": false,
             "title": "Remove Bg",
             "type": "boolean"
-          },
-          "requested_alias": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Requested Alias"
           },
           "smart_crop": {
             "default": false,
@@ -2495,95 +3061,182 @@
         },
         "title": "WatermarkLogoUploadUrlRequest",
         "type": "object"
+      },
+      "WebhookBundle": {
+        "properties": {
+          "download": {
+            "$ref": "#/components/schemas/WebhookBundleDownload"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "size_bytes": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": {
+            "const": "zip",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "filename",
+          "size_bytes",
+          "download"
+        ],
+        "type": "object"
+      },
+      "WebhookBundleDownload": {
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "url": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "expiresAt"
+        ],
+        "type": "object"
+      },
+      "WebhookDelivery": {
+        "additionalProperties": true,
+        "properties": {
+          "bundle": {
+            "$ref": "#/components/schemas/WebhookBundle"
+          },
+          "deliverables": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "layout": {
+            "type": "string"
+          },
+          "manifests": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "mode": {
+            "enum": [
+              "PULL",
+              "NONE",
+              "BATCH"
+            ],
+            "type": "string"
+          },
+          "retentionDays": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "type": "object"
+      },
+      "WebhookError": {
+        "additionalProperties": true,
+        "properties": {
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      },
+      "WebhookRetryResponse": {
+        "properties": {
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "http_status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          },
+          "status": {
+            "const": "success",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "msg",
+          "attempts"
+        ],
+        "title": "WebhookRetryResponse",
+        "type": "object"
       }
     },
     "securitySchemes": {
-      "APIKeyHeader": {
+      "ProductionApiKey": {
+        "description": "MediaRuntime server-side API key. Keep it in a secret manager and never expose it in browser or mobile code.",
+        "in": "header",
+        "name": "X-API-Key",
+        "type": "apiKey"
+      },
+      "SandboxToken": {
+        "description": "Ephemeral credential returned by POST /v1/sandbox/session for bounded sandbox jobs only.",
         "in": "header",
         "name": "X-Sandbox-Token",
         "type": "apiKey"
-      },
-      "HTTPBearer": {
-        "scheme": "bearer",
-        "type": "http"
       }
     }
   },
+  "externalDocs": {
+    "description": "MediaRuntime developer documentation",
+    "url": "https://mediaruntime.com/docs"
+  },
   "info": {
-    "description": "The single entry point for all Transcoder client applications.",
-    "title": "Transcoder API Gateway",
+    "description": "Asynchronous media processing for video, audio, and images.",
+    "title": "MediaRuntime API",
     "version": "1.0.0"
   },
   "openapi": "3.1.0",
   "paths": {
-    "/": {
-      "get": {
-        "operationId": "root__get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "Root"
-      }
-    },
-    "/health": {
-      "get": {
-        "operationId": "health_health_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "Health"
-      }
-    },
-    "/healthz": {
-      "get": {
-        "operationId": "healthz_healthz_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "Healthz"
-      }
-    },
-    "/readyz": {
-      "get": {
-        "operationId": "readyz_readyz_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "Readyz"
-      }
-    },
     "/v1/account/watermark-logo/confirm": {
       "post": {
-        "description": "Called after the client PUTs the logo file to the signed URL above. Persists the\nlogo (and its fixed position/opacity/scale defaults, set once here) onto the\naccount doc — replacing any previous logo, since an account has only one at a time.",
-        "operationId": "confirm_watermark_logo_v1_account_watermark_logo_confirm_post",
+        "description": "Confirms the uploaded PNG and saves the account's default placement, opacity, and scale settings.",
+        "operationId": "confirmWatermarkLogo",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2618,21 +3271,19 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Confirm Watermark Logo",
+        "summary": "Confirm a watermark logo",
         "tags": [
-          "App Routes"
+          "Watermarks"
         ]
       }
     },
     "/v1/account/watermark-logo/upload-url": {
       "post": {
-        "operationId": "generate_watermark_logo_upload_url_v1_account_watermark_logo_upload_url_post",
+        "description": "Creates a short-lived PNG upload target for the caller's account watermark logo.",
+        "operationId": "createWatermarkLogoUploadUrl",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2667,42 +3318,42 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Generate Watermark Logo Upload Url",
+        "summary": "Create a watermark-logo upload target",
         "tags": [
-          "App Routes"
+          "Watermarks"
         ]
       }
     },
     "/v1/capabilities": {
       "get": {
-        "description": "What each output type and preset requires of its input.\n\nThe same table the gateway enforces at submit, published so clients can validate\nbefore sending rather than reimplementing the rules and drifting from them.\n\nUnauthenticated: it is static product documentation, not account data.",
-        "operationId": "get_capabilities_v1_capabilities_get",
+        "description": "Returns the same output types, presets, aliases, optional features, tiers, and input requirements enforced when a job is submitted. No authentication is required.",
+        "operationId": "getCapabilities",
         "responses": {
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilitiesResponse"
+                }
               }
             },
             "description": "Successful Response"
           }
         },
-        "summary": "Get Capabilities",
+        "security": [],
+        "summary": "Get supported capabilities",
         "tags": [
-          "App Routes"
+          "Discovery"
         ]
       }
     },
     "/v1/jobs": {
       "get": {
-        "description": "Your account's jobs, newest first.\n\nScoped to the caller's account, same as GET /v1/jobs/{job_id}. Ordered by updatedAt\ndescending and paginated with an opaque cursor (the last job_id of the previous page)\nrather than an offset, so rows are not skipped or repeated when jobs update mid-scan.\n\nRows omit the bundle download URL by design; fetch the single-job endpoint for that.",
-        "operationId": "list_jobs_v1_jobs_get",
+        "description": "Lists the caller's jobs newest first, with optional status filtering and cursor pagination. Fetch a single job to obtain its current bundle link.",
+        "operationId": "listJobs",
         "parameters": [
           {
             "description": "Filter by status, e.g. COMPLETED, FAILED, PROCESSING",
@@ -2767,20 +3418,17 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "List Jobs",
+        "summary": "List jobs",
         "tags": [
-          "App Routes"
+          "Jobs"
         ]
       },
       "post": {
-        "description": "Handles:\n  - Real API key requests (X-API-Key)      -> api_ctx.authMode == \"api_key\" (or absent on legacy)\n  - Sandbox requests (X-Sandbox-Token)     -> api_ctx.sandbox == True\n  - Workspace requests (Firebase Bearer)   -> api_ctx.authMode == \"workspace\"\n\nNOTE:\n  - Sandbox is intentionally standard-only.\n  - Worker must be able to detect workspace jobs similarly to sandbox jobs.",
-        "operationId": "create_job_v1_jobs_post",
+        "description": "Creates an asynchronous media-processing job. Authenticate with a production API key or an ephemeral sandbox token. Sandbox jobs support only capabilities marked for the sandbox environment. Use Idempotency-Key when safely retrying the same logical request.",
+        "operationId": "createJob",
         "parameters": [
           {
             "description": "Optional. Retrying with the same key returns the original job instead of queueing (and charging for) a second one. Scoped to your account, honoured for 24 hours.",
@@ -2798,6 +3446,49 @@
         "requestBody": {
           "content": {
             "application/json": {
+              "examples": {
+                "batch": {
+                  "summary": "Apply one output recipe to two inputs",
+                  "value": {
+                    "inputs": [
+                      {
+                        "input_id": "asset-a",
+                        "source": "https://cdn.example.com/media/a.mp4"
+                      },
+                      {
+                        "input_id": "asset-b",
+                        "source": "https://cdn.example.com/media/b.mp4"
+                      }
+                    ],
+                    "outputs": [
+                      "video.web"
+                    ]
+                  }
+                },
+                "multipleOutputs": {
+                  "summary": "Create streaming video, a transcript, and a media report",
+                  "value": {
+                    "outputs": [
+                      "video.streaming",
+                      "audio.transcription",
+                      {
+                        "preset": "media_report_v1",
+                        "type": "image"
+                      }
+                    ],
+                    "source": "https://cdn.example.com/media/launch.mp4"
+                  }
+                },
+                "webVideo": {
+                  "summary": "Create one web-ready video",
+                  "value": {
+                    "outputs": [
+                      "video.web"
+                    ],
+                    "source": "https://cdn.example.com/media/launch.mp4"
+                  }
+                }
+              },
               "schema": {
                 "$ref": "#/components/schemas/CreateJobRequest"
               }
@@ -2829,22 +3520,22 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
+            "ProductionApiKey": []
           },
           {
-            "HTTPBearer": []
+            "SandboxToken": []
           }
         ],
-        "summary": "Create Job",
+        "summary": "Create a media job",
         "tags": [
-          "App Routes"
+          "Jobs"
         ]
       }
     },
     "/v1/jobs/{job_id}": {
       "get": {
-        "description": "Status, tier decision, usage and billing for a single job.\n\nScoped to the caller's account: the document is read from\ndb-accounts/{their account}/jobs/{job_id}, so a valid key for one account cannot\nread another account's job — an unknown id and someone else's id both 404.\n\nThe response is built from an explicit allowlist. The stored document also holds\nrunner/lane internals, engine result URIs, the raw estimate and\ndeliveryAccess.bundleToken; none of those are returned. The bundle download URL IS\nreturned, because it is job-scoped, expiring, and the caller owns the job.\n\n`media` is the exception that proves the rule: it is a curated view of\nestimate.probe.input_media, built field by field in services/job_media.py rather than\npassed through, so the rest of the estimate stays internal. It reports what the input\nactually was, which is what makes a compatibility rejection self-explanatory.",
-        "operationId": "get_job_status_v1_jobs__job_id__get",
+        "description": "Returns the current status, tier decision, usage, billing, probed input media, caller metadata, and expiring bundle access for one owned job.",
+        "operationId": "getJob",
         "parameters": [
           {
             "description": "The ID of the job to inspect",
@@ -2882,21 +3573,19 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Get Job Status",
+        "summary": "Get a job",
         "tags": [
-          "App Routes"
+          "Jobs"
         ]
       }
     },
     "/v1/jobs/{job_id}/bundle": {
       "get": {
-        "operationId": "download_job_bundle_v1_jobs__job_id__bundle_get",
+        "description": "Validates the job-scoped delivery token and redirects to a short-lived signed URL for the canonical ZIP output bundle.",
+        "operationId": "downloadJobBundle",
         "parameters": [
           {
             "description": "The ID of the job to download",
@@ -2923,13 +3612,29 @@
           }
         ],
         "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
+          "307": {
+            "description": "Redirect to a short-lived signed URL for the ZIP output bundle.",
+            "headers": {
+              "Location": {
+                "description": "Short-lived signed storage URL for the ZIP bundle.",
+                "schema": {
+                  "format": "uri",
+                  "type": "string"
+                }
               }
-            },
-            "description": "Successful Response"
+            }
+          },
+          "401": {
+            "description": "The delivery token is missing or invalid."
+          },
+          "403": {
+            "description": "The delivery token does not authorize this job."
+          },
+          "404": {
+            "description": "The job or its bundle was not found."
+          },
+          "410": {
+            "description": "The delivery token has expired."
           },
           "422": {
             "content": {
@@ -2942,16 +3647,17 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Download Job Bundle",
+        "security": [],
+        "summary": "Download a job output bundle",
         "tags": [
-          "App Routes"
+          "Job Results"
         ]
       }
     },
     "/v1/jobs/{job_id}/codes": {
       "get": {
-        "description": "Bounded QR/barcode detections produced by code_detect_v1.\n\nDecoded payloads are untrusted data. Clients must render them as text and must not\nautomatically navigate to URLs found in a code. Evidence frames and codes.json also\nremain in the canonical ZIP bundle.",
-        "operationId": "get_job_code_detections_v1_jobs__job_id__codes_get",
+        "description": "Returns the bounded code-detection report inline when available, or a short-lived download URL for a larger report. Decoded values are untrusted data and must not be followed automatically.",
+        "operationId": "getCodeDetections",
         "parameters": [
           {
             "description": "The ID of the job to inspect",
@@ -2969,7 +3675,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/JobReportResponse"
+                }
               }
             },
             "description": "Successful Response"
@@ -2987,22 +3695,19 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Get Job Code Detections",
+        "summary": "Get QR and barcode detections",
         "tags": [
-          "App Routes"
+          "Media Analysis"
         ]
       }
     },
     "/v1/jobs/{job_id}/compatibility-report": {
       "get": {
-        "description": "The versioned compatibility verdict produced by compatibility_report_v1.\n\nThe report remains part of the canonical ZIP bundle. This account-scoped endpoint\nexposes the small JSON result directly for dashboards and automated decisions.",
-        "operationId": "get_job_compatibility_report_v1_jobs__job_id__compatibility_report_get",
+        "description": "Returns the versioned browser, device, social-upload, and editing compatibility verdict produced for the job.",
+        "operationId": "getCompatibilityReport",
         "parameters": [
           {
             "description": "The ID of the job to inspect",
@@ -3020,7 +3725,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/JobReportResponse"
+                }
               }
             },
             "description": "Successful Response"
@@ -3038,22 +3745,19 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Get Job Compatibility Report",
+        "summary": "Get a compatibility report",
         "tags": [
-          "App Routes"
+          "Media Analysis"
         ]
       }
     },
     "/v1/jobs/{job_id}/media-report": {
       "get": {
-        "description": "The forensic media report produced by the media_report_v1 preset.\n\nThe report also ships inside the outputs bundle; this serves it directly so a caller\ndoes not have to download and unzip a bundle to read a few KB of JSON.\n\nAccount-scoped like the other job endpoints. 404 when the job exists but carries no\nreport, which means media_report_v1 was not among its outputs.\n\nReturns the report inline when the worker stored it. Very large reports are kept out\nof the job document, and the response then carries `download_url` instead — callers\nshould handle both.",
-        "operationId": "get_job_media_report_v1_jobs__job_id__media_report_get",
+        "description": "Returns the forensic media report inline when available, or a short-lived download URL when the report is too large to store with the job.",
+        "operationId": "getMediaReport",
         "parameters": [
           {
             "description": "The ID of the job to inspect",
@@ -3071,7 +3775,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/JobReportResponse"
+                }
               }
             },
             "description": "Successful Response"
@@ -3089,22 +3795,19 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Get Job Media Report",
+        "summary": "Get a media report",
         "tags": [
-          "App Routes"
+          "Media Analysis"
         ]
       }
     },
     "/v1/jobs/{job_id}/moderation": {
       "get": {
-        "description": "Moderation verdict for a job.\n\nA separate endpoint rather than a field on GET /v1/jobs/{job_id} because the verdict\nis the thing a moderation caller polls for, and it lets a client fetch it without\npulling billing and bundle detail on every poll.\n\nScoped to the caller's account exactly like the status endpoint: an unknown id and\nanother account's id both 404.\n\n404 when the job exists but moderation was never requested. That is deliberate — a\n200 with an empty body would be indistinguishable from \"moderated and found nothing\",\nand for a moderation product those must never be confused.\n\nThe response is an allowlist AND the stored result is stripped on read. Job documents\nwritten before the worker's sanitizer was fixed still contain the threshold table and\nmodel names; see services/job_moderation.py.",
-        "operationId": "get_job_moderation_v1_jobs__job_id__moderation_get",
+        "description": "Returns the requested moderation verdict and category results for one job. A 404 means moderation was not requested or the job is not visible to the caller.",
+        "operationId": "getModerationResult",
         "parameters": [
           {
             "description": "The ID of the job to inspect",
@@ -3142,21 +3845,19 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Get Job Moderation",
+        "summary": "Get a moderation result",
         "tags": [
-          "App Routes"
+          "Moderation"
         ]
       }
     },
     "/v1/jobs/{job_id}/retry-webhook": {
       "post": {
-        "operationId": "retry_webhook_v1_jobs__job_id__retry_webhook_post",
+        "description": "Retries the signed terminal webhook for an owned job that has already reached a terminal state.",
+        "operationId": "retryJobWebhook",
         "parameters": [
           {
             "description": "The ID of the job to retry webhook for",
@@ -3174,7 +3875,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookRetryResponse"
+                }
               }
             },
             "description": "Successful Response"
@@ -3192,26 +3895,26 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Retry Webhook",
+        "summary": "Retry a terminal webhook",
         "tags": [
-          "App Routes"
+          "Webhooks"
         ]
       }
     },
     "/v1/recipes": {
       "get": {
-        "operationId": "list_hosted_recipes_v1_recipes_get",
+        "description": "Lists built-in recipes and active immutable recipe versions available to the caller's account.",
+        "operationId": "listRecipes",
         "responses": {
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/HostedRecipeListResponse"
+                }
               }
             },
             "description": "Successful Response"
@@ -3219,19 +3922,17 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "List Hosted Recipes",
+        "summary": "List hosted recipes",
         "tags": [
-          "recipes"
+          "Recipes"
         ]
       },
       "post": {
-        "operationId": "create_hosted_recipe_v1_recipes_post",
+        "description": "Creates version 1 of a new account-scoped recipe. Recipe names use lowercase letters, numbers, and hyphens.",
+        "operationId": "createRecipe",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3246,7 +3947,9 @@
           "201": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/HostedRecipeResponse"
+                }
               }
             },
             "description": "Successful Response"
@@ -3264,21 +3967,19 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Create Hosted Recipe",
+        "summary": "Create a hosted recipe",
         "tags": [
-          "recipes"
+          "Recipes"
         ]
       }
     },
     "/v1/recipes/{name}": {
       "delete": {
-        "operationId": "archive_hosted_recipe_v1_recipes__name__delete",
+        "description": "Archives an account-scoped recipe so it cannot be used for new jobs. Existing jobs retain their materialized recipe acknowledgement.",
+        "operationId": "archiveRecipe",
         "parameters": [
           {
             "in": "path",
@@ -3295,7 +3996,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ArchivedRecipeResponse"
+                }
               }
             },
             "description": "Successful Response"
@@ -3313,19 +4016,17 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Archive Hosted Recipe",
+        "summary": "Archive a hosted recipe",
         "tags": [
-          "recipes"
+          "Recipes"
         ]
       },
       "get": {
-        "operationId": "get_hosted_recipe_v1_recipes__name__get",
+        "description": "Returns the latest immutable version of a built-in or account-scoped recipe.",
+        "operationId": "getRecipe",
         "parameters": [
           {
             "in": "path",
@@ -3342,7 +4043,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/HostedRecipeResponse"
+                }
               }
             },
             "description": "Successful Response"
@@ -3360,21 +4063,19 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Get Hosted Recipe",
+        "summary": "Get a hosted recipe",
         "tags": [
-          "recipes"
+          "Recipes"
         ]
       }
     },
     "/v1/recipes/{name}/versions": {
       "post": {
-        "operationId": "create_hosted_recipe_version_v1_recipes__name__versions_post",
+        "description": "Adds a new immutable version when expected_latest_version still matches the account's latest version.",
+        "operationId": "createRecipeVersion",
         "parameters": [
           {
             "in": "path",
@@ -3401,7 +4102,9 @@
           "201": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/HostedRecipeResponse"
+                }
               }
             },
             "description": "Successful Response"
@@ -3419,21 +4122,19 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Create Hosted Recipe Version",
+        "summary": "Create a recipe version",
         "tags": [
-          "recipes"
+          "Recipes"
         ]
       }
     },
     "/v1/recipes/{name}/versions/{version}": {
       "get": {
-        "operationId": "get_hosted_recipe_version_v1_recipes__name__versions__version__get",
+        "description": "Returns one exact immutable recipe version.",
+        "operationId": "getRecipeVersion",
         "parameters": [
           {
             "in": "path",
@@ -3460,7 +4161,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/HostedRecipeResponse"
+                }
               }
             },
             "description": "Successful Response"
@@ -3478,42 +4181,42 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Get Hosted Recipe Version",
+        "summary": "Get a recipe version",
         "tags": [
-          "recipes"
+          "Recipes"
         ]
       }
     },
     "/v1/sandbox/session": {
       "post": {
-        "description": "Returns an ephemeral sandbox token for the frontend sandbox.\nThis token is NOT a real API key and cannot access real accounts.",
-        "operationId": "create_sandbox_session_v1_sandbox_session_post",
+        "description": "Creates a short-lived, rate-limited sandbox credential. It is not a production API key and cannot access customer accounts.",
+        "operationId": "createSandboxSession",
         "responses": {
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxSessionResponse"
+                }
               }
             },
             "description": "Successful Response"
           }
         },
-        "summary": "Create Sandbox Session",
+        "security": [],
+        "summary": "Create a sandbox session",
         "tags": [
-          "sandbox"
+          "Sandbox"
         ]
       }
     },
     "/v1/upload-url": {
       "post": {
-        "description": "Uses accountId (NOT ownerUid) so uploads are grouped by account/billing boundary.\nSandbox allowed too (uploads go under sandbox account boundary).",
-        "operationId": "generate_upload_url_v1_upload_url_post",
+        "description": "Creates a short-lived upload target for local media bytes. Use an existing public or time-limited source URL instead when one is already available.",
+        "operationId": "createUploadUrl",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3548,16 +4251,397 @@
         },
         "security": [
           {
-            "APIKeyHeader": []
-          },
-          {
-            "HTTPBearer": []
+            "ProductionApiKey": []
           }
         ],
-        "summary": "Generate Upload Url",
+        "summary": "Create an input upload target",
         "tags": [
-          "App Routes"
+          "Uploads"
         ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "Production",
+      "url": "https://mediaruntime.com"
+    }
+  ],
+  "tags": [
+    {
+      "description": "Public capability and contract discovery.",
+      "name": "Discovery"
+    },
+    {
+      "description": "Optional upload targets for local media bytes.",
+      "name": "Uploads"
+    },
+    {
+      "description": "Create, list, and inspect asynchronous media jobs.",
+      "name": "Jobs"
+    },
+    {
+      "description": "Redeem completed job output bundles.",
+      "name": "Job Results"
+    },
+    {
+      "description": "Read analysis reports produced by requested presets.",
+      "name": "Media Analysis"
+    },
+    {
+      "description": "Read a job's requested moderation verdict.",
+      "name": "Moderation"
+    },
+    {
+      "description": "Retry delivery of signed terminal events.",
+      "name": "Webhooks"
+    },
+    {
+      "description": "Manage immutable, account-scoped processing recipes.",
+      "name": "Recipes"
+    },
+    {
+      "description": "Configure the account watermark logo.",
+      "name": "Watermarks"
+    },
+    {
+      "description": "Create a bounded public-sandbox session.",
+      "name": "Sandbox"
+    }
+  ],
+  "webhooks": {
+    "job.completed": {
+      "post": {
+        "description": "Verify the signature against the exact raw request bytes before parsing or acting on this terminal event.",
+        "operationId": "receiveJobCompleted",
+        "parameters": [
+          {
+            "description": "Unique event identifier included in the signature input.",
+            "in": "header",
+            "name": "X-Transcoder-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unix timestamp included in the signature input. Reject stale events.",
+            "in": "header",
+            "name": "X-Transcoder-Timestamp",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9]+$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "HMAC-SHA256 signature in the form t=<timestamp>,v1=<hex digest>.",
+            "in": "header",
+            "name": "X-Transcoder-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "completed": {
+                  "summary": "COMPLETED terminal event",
+                  "value": {
+                    "account_id": "acc_example",
+                    "billing": {
+                      "status": "PAID"
+                    },
+                    "completedAt": "2026-08-26T12:00:00Z",
+                    "delivery": {
+                      "bundle": {
+                        "download": {
+                          "expiresAt": "2026-09-02T12:00:00Z",
+                          "url": "https://mediaruntime.com/v1/jobs/job_example/bundle?token=example"
+                        },
+                        "filename": "job_example_outputs.zip",
+                        "size_bytes": 1048576,
+                        "type": "zip"
+                      },
+                      "deliverables": [],
+                      "expiresAt": "2026-09-02T12:00:00Z",
+                      "layout": "bundle_relative_v1",
+                      "manifests": {},
+                      "mode": "PULL",
+                      "retentionDays": 7
+                    },
+                    "event_id": "evt_job_example_completed",
+                    "job_id": "job_example",
+                    "meta": {
+                      "request_metadata": {
+                        "asset_id": "asset_0426"
+                      }
+                    },
+                    "status": "COMPLETED"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CompletedWebhook"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The receiver accepted the event."
+          }
+        },
+        "summary": "Receive a job.completed event"
+      }
+    },
+    "job.failed": {
+      "post": {
+        "description": "Verify the signature against the exact raw request bytes before parsing or acting on this terminal event.",
+        "operationId": "receiveJobFailed",
+        "parameters": [
+          {
+            "description": "Unique event identifier included in the signature input.",
+            "in": "header",
+            "name": "X-Transcoder-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unix timestamp included in the signature input. Reject stale events.",
+            "in": "header",
+            "name": "X-Transcoder-Timestamp",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9]+$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "HMAC-SHA256 signature in the form t=<timestamp>,v1=<hex digest>.",
+            "in": "header",
+            "name": "X-Transcoder-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "failed": {
+                  "summary": "FAILED terminal event",
+                  "value": {
+                    "account_id": "acc_example",
+                    "billing": {
+                      "status": "RELEASED"
+                    },
+                    "delivery": {
+                      "mode": "NONE"
+                    },
+                    "error": {
+                      "code": "JOB_FAILED",
+                      "message": "The job could not be completed."
+                    },
+                    "event_id": "evt_job_example_failed",
+                    "failedAt": "2026-08-26T12:00:00Z",
+                    "job_id": "job_example",
+                    "meta": {
+                      "request_metadata": {
+                        "asset_id": "asset_0426"
+                      }
+                    },
+                    "status": "FAILED"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/FailedWebhook"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The receiver accepted the event."
+          }
+        },
+        "summary": "Receive a job.failed event"
+      }
+    },
+    "job.partial": {
+      "post": {
+        "description": "Verify the signature against the exact raw request bytes before parsing or acting on this terminal event.",
+        "operationId": "receiveJobPartial",
+        "parameters": [
+          {
+            "description": "Unique event identifier included in the signature input.",
+            "in": "header",
+            "name": "X-Transcoder-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unix timestamp included in the signature input. Reject stale events.",
+            "in": "header",
+            "name": "X-Transcoder-Timestamp",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9]+$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "HMAC-SHA256 signature in the form t=<timestamp>,v1=<hex digest>.",
+            "in": "header",
+            "name": "X-Transcoder-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "partial": {
+                  "summary": "PARTIAL terminal event",
+                  "value": {
+                    "account_id": "acc_example",
+                    "billing": {
+                      "status": "BATCH"
+                    },
+                    "delivery": {
+                      "items": [],
+                      "mode": "BATCH"
+                    },
+                    "error": {
+                      "code": "BATCH_PARTIAL",
+                      "message": "1 of 2 batch items failed or were rejected."
+                    },
+                    "event_id": "evt_job_example_partial",
+                    "finishedAt": "2026-08-26T12:00:00Z",
+                    "job_id": "job_example",
+                    "meta": {
+                      "batch": {
+                        "completed_count": 1,
+                        "failed_count": 1,
+                        "rejected_count": 0,
+                        "terminal_count": 2,
+                        "total_inputs": 2
+                      },
+                      "request_metadata": {
+                        "asset_id": "asset_0426"
+                      }
+                    },
+                    "status": "PARTIAL"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PartialWebhook"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The receiver accepted the event."
+          }
+        },
+        "summary": "Receive a job.partial event"
+      }
+    },
+    "job.rejected": {
+      "post": {
+        "description": "Verify the signature against the exact raw request bytes before parsing or acting on this terminal event.",
+        "operationId": "receiveJobRejected",
+        "parameters": [
+          {
+            "description": "Unique event identifier included in the signature input.",
+            "in": "header",
+            "name": "X-Transcoder-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unix timestamp included in the signature input. Reject stale events.",
+            "in": "header",
+            "name": "X-Transcoder-Timestamp",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9]+$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "HMAC-SHA256 signature in the form t=<timestamp>,v1=<hex digest>.",
+            "in": "header",
+            "name": "X-Transcoder-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "rejected": {
+                  "summary": "REJECTED terminal event",
+                  "value": {
+                    "account_id": "acc_example",
+                    "billing": {
+                      "status": "RELEASED"
+                    },
+                    "delivery": {
+                      "mode": "NONE"
+                    },
+                    "error": {
+                      "code": "JOB_REJECTED",
+                      "message": "The job could not be completed."
+                    },
+                    "event_id": "evt_job_example_rejected",
+                    "job_id": "job_example",
+                    "meta": {
+                      "request_metadata": {
+                        "asset_id": "asset_0426"
+                      }
+                    },
+                    "rejectedAt": "2026-08-26T12:00:00Z",
+                    "status": "REJECTED"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/RejectedWebhook"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The receiver accepted the event."
+          }
+        },
+        "summary": "Receive a job.rejected event"
       }
     }
   }

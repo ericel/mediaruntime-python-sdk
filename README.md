@@ -14,6 +14,8 @@ version; compatible fields and capabilities may be added in minor releases.
 pip install mediaruntime
 ```
 
+For a complete clone-and-run project, see the [MediaRuntime Python quickstart](https://github.com/ericel/mediaruntime-quickstarts/tree/main/python). The shared repository also includes webhook receivers, Postman guidance, and equivalent Node.js, Go, and PHP examples.
+
 Set `MEDIARUNTIME_API_KEY`; the production API URL is built in. Pass the server-held key
 explicitly when you want the credential source to be visible in application code.
 
