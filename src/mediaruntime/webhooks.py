@@ -61,6 +61,7 @@ class WebhooksClient:
                 "missing_secret",
                 "A MediaRuntime webhook secret is required for verification",
             )
+        # Verification must receive the raw body before any framework JSON parsing or rewriting.
         event_id = _header(headers, "X-Transcoder-Id").strip()
         timestamp_header = _header(headers, "X-Transcoder-Timestamp").strip()
         signature_header = _header(headers, "X-Transcoder-Signature").strip()
@@ -95,6 +96,7 @@ class WebhooksClient:
                 "timestamp_mismatch",
                 "Webhook signature timestamp does not match X-Transcoder-Timestamp",
             )
+        # Timestamp tolerance limits replay; event IDs should still be durably deduplicated.
         current = time.time() if now is None else now
         if tolerance < 0 or abs(current - timestamp) > tolerance:
             raise WebhookVerificationError(
@@ -104,11 +106,13 @@ class WebhooksClient:
         body = _body(raw_body)
         signed = timestamp_header.encode() + b"." + event_id.encode() + b"." + body
         expected = hmac.new(resolved_secret.encode(), signed, hashlib.sha256).hexdigest()
+        # Accept any v1 value to support signature rotation while comparing in constant time.
         if not any(hmac.compare_digest(expected, signature.lower()) for signature in signatures):
             raise WebhookVerificationError(
                 "invalid_signature",
                 "Webhook signature verification failed",
             )
+        # Parse only after authentication so untrusted JSON never reaches application handlers.
         try:
             parsed = json.loads(body)
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
@@ -154,6 +158,7 @@ class WebhooksClient:
         def route() -> HandlerResult | tuple[str, int]:
             from flask import request  # type: ignore[import-not-found]
 
+            # get_data preserves the bytes authenticated by the gateway signature.
             try:
                 event = self.verify(
                     request.get_data(cache=True, as_text=False),
@@ -174,6 +179,7 @@ class WebhooksClient:
         async def route(request: Any) -> HandlerResult:
             from fastapi import HTTPException  # type: ignore[import-not-found]
 
+            # Starlette caches request.body(), allowing verification before downstream parsing.
             try:
                 event = self.verify(await request.body(), request.headers, **verify_options)
             except WebhookVerificationError as error:

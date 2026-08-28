@@ -77,6 +77,7 @@ class WatermarkLogoClient:
         source = Path(path).expanduser().resolve()
         if not source.is_file() or source.suffix.lower() != ".png":
             raise ValidationError("Watermark logo must be a PNG file", status=400, field="path")
+        # Watermark configuration is two-phase: upload bytes, then confirm account settings.
         target = self.create_upload_target()
         headers = dict(target.upload_headers)
         headers.setdefault("Content-Length", str(source.stat().st_size))

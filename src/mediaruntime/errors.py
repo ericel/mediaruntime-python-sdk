@@ -22,6 +22,7 @@ class MediaRuntimeAPIError(MediaRuntimeError):
         field: str | None = None,
         headers: Mapping[str, str] | None = None,
     ) -> None:
+        # Preserve request metadata so callers can log support IDs without parsing messages.
         super().__init__(message)
         self.status = status
         self.code = code

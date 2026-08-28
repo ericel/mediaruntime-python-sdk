@@ -31,6 +31,7 @@ class MediaRuntime:
             raise TypeError("timeout must be positive")
         if not isinstance(max_retries, int) or not 0 <= max_retries <= 10:
             raise TypeError("max_retries must be an integer between 0 and 10")
+        # Explicit constructor values override environment configuration for predictable tests.
         self._transport = Transport(
             api_key=api_key or os.getenv("MEDIARUNTIME_API_KEY"),
             base_url=base_url or os.getenv("MEDIARUNTIME_API_URL") or DEFAULT_BASE_URL,
@@ -38,6 +39,7 @@ class MediaRuntime:
             max_retries=max_retries,
             client=http_client,
         )
+        # Resource clients share one connection pool and one authentication policy.
         self.uploads = UploadsClient(self._transport)
         self.jobs = JobsClient(self._transport, self.uploads)
         self.recipes = RecipesClient(self._transport)

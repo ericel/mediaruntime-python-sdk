@@ -56,11 +56,13 @@ class UploadsClient:
         resolved_type = (
             content_type or mimetypes.guess_type(source.name)[0] or "application/octet-stream"
         )
+        # The API supplies the exact signed destination and any storage-provider headers.
         target = self.create_target(source.name, resolved_type)
         headers = dict(target.upload_headers)
         headers.setdefault("Content-Length", str(source.stat().st_size))
         with source.open("rb") as handle:
             self._transport.upload(target.upload_url, content=handle, headers=headers)
+        # Jobs consume file_uri; upload_url is an expiring transport detail returned for audit.
         return UploadFileResult(
             upload_url=target.upload_url,
             file_uri=target.file_uri,
@@ -74,6 +76,7 @@ class UploadsClient:
         if not value:
             raise ValidationError("source must not be empty", status=400, field="source")
         parsed = urlparse(value)
+        # Hosted sources pass through; local paths are uploaded and replaced with private URIs.
         if parsed.scheme.lower() in {"http", "https", "gs"}:
             return value
         if parsed.scheme.lower() == "file":

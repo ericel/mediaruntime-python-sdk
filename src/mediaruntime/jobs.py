@@ -26,6 +26,7 @@ from .transport import Transport
 from .uploads import Source, UploadsClient
 
 TERMINAL_STATUSES = {"COMPLETED", "FAILED", "REJECTED", "PARTIAL"}
+# These aliases are the stable shorthand contract; explicit presets remain gateway-discovered.
 OutputAlias = Literal[
     "video.web",
     "video.streaming",
@@ -53,6 +54,7 @@ def _job_id(value: str) -> str:
     result = value.strip()
     if not result:
         raise ValidationError("job_id must not be empty", status=400, field="job_id")
+    # Treat a caller-provided ID as one path segment even if the input contains delimiters.
     return quote(result, safe="")
 
 
@@ -212,6 +214,7 @@ class JobsClient:
         else:
             body["outputs"] = serialized_outputs
         if source is not None:
+            # Local paths upload transparently; public, signed, and gs:// sources pass through.
             body["source"] = self._uploads.resolve_source(source)
         else:
             resolved_inputs: list[dict[str, Any]] = []
@@ -319,6 +322,7 @@ class JobsClient:
             last_job = self.get(job_id)
             if last_job.status.upper() in TERMINAL_STATUSES:
                 return last_job
+            # Monotonic time avoids wall-clock changes; jitter prevents synchronized polling.
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise JobWaitTimeoutError(timeout, last_job)
@@ -342,6 +346,7 @@ class JobsClient:
                 retry="safe",
             )
         )
+        # download_url is signed and time-limited; report is the durable parsed representation.
         return MediaReportResult(
             job_id=str(data.get("job_id") or job_id),
             report=object_dict(data.get("report"))

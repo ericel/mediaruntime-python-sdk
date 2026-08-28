@@ -5,6 +5,7 @@ from typing import Any
 
 
 def object_dict(value: Any) -> dict[str, Any]:
+    # Public models tolerate additive gateway fields while rejecting unexpected container types.
     return dict(value) if isinstance(value, Mapping) else {}
 
 

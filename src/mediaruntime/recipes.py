@@ -21,6 +21,7 @@ def _name(value: str) -> str:
             status=400,
             field="name",
         )
+    # Quote even validated names so future grammar changes cannot create path traversal.
     return quote(normalized, safe="")
 
 
@@ -92,6 +93,7 @@ class RecipesClient:
                 status=400,
                 field="expected_latest_version",
             )
+        # The expected version is an optimistic-concurrency guard for competing maintainers.
         body: dict[str, Any] = {
             "expected_latest_version": expected_latest_version,
             "template": dict(template),

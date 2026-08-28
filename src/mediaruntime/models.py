@@ -27,6 +27,7 @@ class PrivacyRedactionOptions(_PrivacyRedactionOptional):
 
 @dataclass(frozen=True, slots=True)
 class JobDetails:
+    # `raw` preserves additive contract fields without weakening the typed stable surface.
     id: str
     status: str
     tier: dict[str, Any]

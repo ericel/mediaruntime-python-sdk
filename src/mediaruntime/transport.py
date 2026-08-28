@@ -34,6 +34,7 @@ def _normalized_error(payload: Any) -> dict[str, Any] | None:
 
 
 def _message_and_field(payload: Any, status: int) -> tuple[str, str | None]:
+    # Normalize canonical envelopes and common framework validation shapes into one exception API.
     normalized = _normalized_error(payload)
     if normalized is not None and isinstance(normalized.get("message"), str):
         normalized_message = str(normalized["message"])
@@ -154,6 +155,7 @@ class Transport:
         client: httpx.Client | None = None,
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
+        # Accept a legacy trailing /v1 while keeping endpoint construction canonical internally.
         normalized = base_url.strip().rstrip("/")
         if normalized.endswith("/v1"):
             normalized = normalized[:-3]
@@ -163,6 +165,7 @@ class Transport:
         self.base_url = normalized
         self.timeout = timeout
         self.max_retries = max_retries
+        # API redirects stay disabled so an API key is never forwarded to another origin.
         self.client = client or httpx.Client(timeout=timeout, follow_redirects=False)
         self._owns_client = client is None
         self._sleep = sleep
@@ -175,6 +178,7 @@ class Transport:
         header_delay = (
             _retry_after_seconds(response.headers.get("Retry-After")) if response else None
         )
+        # Prefer server backpressure, otherwise use capped exponential backoff with jitter.
         delay = header_delay if header_delay is not None else min(8.0, 0.25 * (2**attempt))
         self._sleep(delay * random.uniform(0.85, 1.15))
 
@@ -190,6 +194,7 @@ class Transport:
         retry: RetryMode = "safe",
         operation: str = "request",
     ) -> Any:
+        # Call sites choose retry safety explicitly; mutation is never inferred from HTTP method.
         request_headers = {
             "Accept": "application/json",
             "User-Agent": f"mediaruntime-python/{VERSION}",
@@ -276,6 +281,7 @@ class Transport:
         content: Any,
         headers: Mapping[str, str],
     ) -> None:
+        # Signed uploads carry storage headers only—never the MediaRuntime API key.
         try:
             response = self.client.put(
                 url,

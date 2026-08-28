@@ -24,6 +24,7 @@ class CapabilitiesClient:
         self._transport = transport
 
     def retrieve(self) -> Capabilities:
+        # Capabilities are public so clients can discover presets before obtaining a key.
         data = object_dict(
             self._transport.request(
                 "GET",
