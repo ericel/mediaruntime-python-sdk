@@ -2,7 +2,7 @@
 
 Official synchronous Python client for the MediaRuntime asynchronous media API.
 
-Status: production/stable `1.2.0`, published on PyPI with GitHub trusted publishing.
+Status: production/stable `1.3.0`, published on PyPI with GitHub trusted publishing.
 
 The documented `1.x` public API follows semantic versioning. Breaking changes to public
 imports, arguments, exceptions, or documented response projections require a new major
@@ -88,6 +88,63 @@ it before validation, estimation, billing, idempotency, and dispatch.
 HTTP(S) and `gs://` sources are submitted directly. Other strings and `pathlib.Path`
 instances are treated as local files and uploaded through MediaRuntime's signed upload
 flow.
+
+## Hosted Sticker Runtime
+
+Use `media.stickers` to configure application collections and access enabled hosted
+packs. Collection configuration uses the same server-held API key as the rest of the
+SDK and does not purchase or activate a pack.
+
+```python
+collection = media.stickers.create_collection(
+    name="Support chat",
+    description="Approved stickers available to support agents",
+)
+
+# The pack must already have an active Hosted Sticker Runtime activation.
+media.stickers.enable_pack(collection.collection_id, "sage-summer-v1")
+
+# Binding the collection once prevents accidental cross-collection searches.
+stickers = media.stickers.collection(collection.collection_id)
+matches = stickers.search("beach", animated=True, limit=12)
+if not matches.items:
+    raise RuntimeError("No matching sticker is enabled")
+
+selected = matches.items[0]
+asset = stickers.resolve(selected.sticker_id, "small_160")
+print(asset.url)  # Five-minute, generation-pinned private delivery URL.
+```
+
+The collection-bound client also provides `list_packs()`, `typeahead()`, and `get()`.
+Workspace management is available through `list_collections()`, `get_collection()`,
+`update_collection()`, `archive_collection()`, `list_pack_bindings()`,
+`add_activation()`, `enable_pack()`, and `disable_pack()`. Disabling a pack removes it
+from new discovery while the gateway preserves eligible historical asset resolution.
+Read current pooled limits and usage with `media.stickers.usage()`.
+
+API keys belong only on trusted servers. If a browser or mobile application must call
+runtime reads directly, mint a short-lived, collection-scoped token on your server and
+return only that token to the client:
+
+```python
+token = media.stickers.create_client_token(
+    collection_id=collection.collection_id,
+    expires_in_seconds=900,
+    scopes=["stickers:search", "stickers:read", "assets:resolve"],
+)
+
+# This resource sends Authorization: Bearer and never sends the workspace API key.
+client_stickers = media.stickers.collection(
+    collection.collection_id,
+    client_token=token.access_token,
+)
+result = client_stickers.search("hello")
+```
+
+Scoped tokens cannot alter collections or read workspace usage. The gateway rechecks
+the parent API key on every token-authenticated call, so revoking the key invalidates
+its outstanding client tokens. Signed asset URLs authorize at most the reported byte
+count; authoritative delivered-byte accounting remains a storage/CDN concern.
 
 ## Batch inputs
 

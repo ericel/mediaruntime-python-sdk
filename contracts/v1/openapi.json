@@ -758,6 +758,39 @@
         "title": "HostedRecipeResponse",
         "type": "object"
       },
+      "HostedRuntimeAllowance": {
+        "description": "Describe the pooled V1 allowance that starts after hosted activation.",
+        "properties": {
+          "delivery_overage_per_gb_cents": {
+            "minimum": 0.0,
+            "title": "Delivery Overage Per Gb Cents",
+            "type": "integer"
+          },
+          "included_delivery_gb": {
+            "minimum": 0.0,
+            "title": "Included Delivery Gb",
+            "type": "integer"
+          },
+          "included_operations": {
+            "minimum": 0.0,
+            "title": "Included Operations",
+            "type": "integer"
+          },
+          "operations_overage_per_100k_cents": {
+            "minimum": 0.0,
+            "title": "Operations Overage Per 100K Cents",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "included_operations",
+          "included_delivery_gb",
+          "operations_overage_per_100k_cents",
+          "delivery_overage_per_gb_cents"
+        ],
+        "title": "HostedRuntimeAllowance",
+        "type": "object"
+      },
       "ImageFormat": {
         "enum": [
           "jpg",
@@ -1981,6 +2014,518 @@
         "title": "JobUsageInfo",
         "type": "object"
       },
+      "MarketplaceCharacter": {
+        "description": "Identify the character family used by a marketplace pack.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "MarketplaceCharacter",
+        "type": "object"
+      },
+      "MarketplacePackDetail": {
+        "description": "Return merchandising, preview, and hosted-runtime details for one pack.",
+        "properties": {
+          "animated": {
+            "title": "Animated",
+            "type": "boolean"
+          },
+          "asset_count": {
+            "minimum": 0.0,
+            "title": "Asset Count",
+            "type": "integer"
+          },
+          "badges": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Badges",
+            "type": "array"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "characters": {
+            "items": {
+              "$ref": "#/components/schemas/MarketplaceCharacter"
+            },
+            "title": "Characters",
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "formats": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Formats",
+            "type": "array"
+          },
+          "hero": {
+            "$ref": "#/components/schemas/MarketplaceStickerPreview"
+          },
+          "hosted_runtime": {
+            "$ref": "#/components/schemas/HostedRuntimeAllowance"
+          },
+          "locales": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Locales",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "platform_listings": {
+            "items": {
+              "$ref": "#/components/schemas/MarketplacePlatformListing"
+            },
+            "title": "Platform Listings",
+            "type": "array"
+          },
+          "previews": {
+            "items": {
+              "$ref": "#/components/schemas/MarketplaceStickerPreview"
+            },
+            "title": "Previews",
+            "type": "array"
+          },
+          "pricing": {
+            "$ref": "#/components/schemas/MarketplacePricing"
+          },
+          "short_description": {
+            "title": "Short Description",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pack_id",
+          "slug",
+          "version",
+          "name",
+          "short_description",
+          "characters",
+          "categories",
+          "tags",
+          "badges",
+          "animated",
+          "asset_count",
+          "locales",
+          "pricing",
+          "hero",
+          "platform_listings",
+          "description",
+          "formats",
+          "hosted_runtime",
+          "previews"
+        ],
+        "title": "MarketplacePackDetail",
+        "type": "object"
+      },
+      "MarketplacePackListResponse": {
+        "description": "Wrap catalog results so pagination can be added without changing item shape.",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MarketplacePackSummary"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "minimum": 0.0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "MarketplacePackListResponse",
+        "type": "object"
+      },
+      "MarketplacePackSummary": {
+        "description": "Return the compact projection required by the marketplace grid.",
+        "properties": {
+          "animated": {
+            "title": "Animated",
+            "type": "boolean"
+          },
+          "asset_count": {
+            "minimum": 0.0,
+            "title": "Asset Count",
+            "type": "integer"
+          },
+          "badges": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Badges",
+            "type": "array"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "characters": {
+            "items": {
+              "$ref": "#/components/schemas/MarketplaceCharacter"
+            },
+            "title": "Characters",
+            "type": "array"
+          },
+          "hero": {
+            "$ref": "#/components/schemas/MarketplaceStickerPreview"
+          },
+          "locales": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Locales",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "platform_listings": {
+            "items": {
+              "$ref": "#/components/schemas/MarketplacePlatformListing"
+            },
+            "title": "Platform Listings",
+            "type": "array"
+          },
+          "pricing": {
+            "$ref": "#/components/schemas/MarketplacePricing"
+          },
+          "short_description": {
+            "title": "Short Description",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pack_id",
+          "slug",
+          "version",
+          "name",
+          "short_description",
+          "characters",
+          "categories",
+          "tags",
+          "badges",
+          "animated",
+          "asset_count",
+          "locales",
+          "pricing",
+          "hero",
+          "platform_listings"
+        ],
+        "title": "MarketplacePackSummary",
+        "type": "object"
+      },
+      "MarketplacePlatformListing": {
+        "description": "Describe an official publisher-controlled listing without granting export rights.",
+        "properties": {
+          "platform": {
+            "pattern": "^[a-z][a-z0-9_-]{1,31}$",
+            "title": "Platform",
+            "type": "string"
+          },
+          "platform_product_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Product Id"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "publisher": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher"
+          },
+          "status": {
+            "enum": [
+              "not_planned",
+              "preparing",
+              "submitted",
+              "rejected",
+              "live",
+              "retired"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "store_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Store Url"
+          }
+        },
+        "required": [
+          "platform",
+          "status"
+        ],
+        "title": "MarketplacePlatformListing",
+        "type": "object"
+      },
+      "MarketplacePreviewAtlasCrop": {
+        "description": "Describe one sticker's rectangle in a platform-generated preview atlas.",
+        "properties": {
+          "height": {
+            "minimum": 1.0,
+            "title": "Height",
+            "type": "integer"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "width": {
+            "minimum": 1.0,
+            "title": "Width",
+            "type": "integer"
+          },
+          "x": {
+            "minimum": 0.0,
+            "title": "X",
+            "type": "integer"
+          },
+          "y": {
+            "minimum": 0.0,
+            "title": "Y",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "url",
+          "x",
+          "y",
+          "width",
+          "height"
+        ],
+        "title": "MarketplacePreviewAtlasCrop",
+        "type": "object"
+      },
+      "MarketplacePrice": {
+        "description": "Represent a configurable price without floating-point currency math.",
+        "properties": {
+          "amount_cents": {
+            "minimum": 0.0,
+            "title": "Amount Cents",
+            "type": "integer"
+          },
+          "billing": {
+            "enum": [
+              "one_time",
+              "monthly",
+              "from"
+            ],
+            "title": "Billing",
+            "type": "string"
+          },
+          "currency": {
+            "const": "USD",
+            "title": "Currency",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "amount_cents",
+          "billing"
+        ],
+        "title": "MarketplacePrice",
+        "type": "object"
+      },
+      "MarketplacePricing": {
+        "description": "Keep downloads and hosted service billing commercially distinct.",
+        "properties": {
+          "commercial_download": {
+            "$ref": "#/components/schemas/MarketplacePrice"
+          },
+          "hosted_activation": {
+            "$ref": "#/components/schemas/MarketplacePrice"
+          },
+          "personal_download": {
+            "$ref": "#/components/schemas/MarketplacePrice"
+          },
+          "platform_export": {
+            "$ref": "#/components/schemas/MarketplacePrice"
+          },
+          "tier": {
+            "enum": [
+              "mini",
+              "standard",
+              "signature",
+              "custom"
+            ],
+            "title": "Tier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tier",
+          "personal_download",
+          "commercial_download",
+          "hosted_activation",
+          "platform_export"
+        ],
+        "title": "MarketplacePricing",
+        "type": "object"
+      },
+      "MarketplaceStickerPreview": {
+        "description": "Expose preview-safe sticker metadata without release storage internals.",
+        "properties": {
+          "animated": {
+            "default": true,
+            "title": "Animated",
+            "type": "boolean"
+          },
+          "atlas": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketplacePreviewAtlasCrop"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "emoji": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Emoji"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "poster_url": {
+            "title": "Poster Url",
+            "type": "string"
+          },
+          "preview_url": {
+            "title": "Preview Url",
+            "type": "string"
+          },
+          "semantic_id": {
+            "title": "Semantic Id",
+            "type": "string"
+          },
+          "sticker_id": {
+            "title": "Sticker Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sticker_id",
+          "semantic_id",
+          "label",
+          "category",
+          "preview_url",
+          "poster_url"
+        ],
+        "title": "MarketplaceStickerPreview",
+        "type": "object"
+      },
       "ModerationCheck": {
         "enum": [
           "sexual",
@@ -2437,6 +2982,466 @@
           }
         ]
       },
+      "RuntimeCharacter": {
+        "description": "Identify one character family without marketplace merchandising fields.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "RuntimeCharacter",
+        "type": "object"
+      },
+      "RuntimeSticker": {
+        "description": "Carry stable sticker metadata suitable for persisted chat references.",
+        "properties": {
+          "animated": {
+            "title": "Animated",
+            "type": "boolean"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "emoji": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Emoji"
+          },
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Keywords",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "pack_slug": {
+            "title": "Pack Slug",
+            "type": "string"
+          },
+          "pack_version": {
+            "title": "Pack Version",
+            "type": "string"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "semantic_id": {
+            "title": "Semantic Id",
+            "type": "string"
+          },
+          "sticker_id": {
+            "title": "Sticker Id",
+            "type": "string"
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/RuntimeStickerVariant"
+            },
+            "title": "Variants",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sticker_id",
+          "semantic_id",
+          "pack_id",
+          "pack_slug",
+          "pack_version",
+          "label",
+          "keywords",
+          "animated",
+          "variants"
+        ],
+        "title": "RuntimeSticker",
+        "type": "object"
+      },
+      "RuntimeStickerPack": {
+        "description": "Expose a published pack enabled for new use in one collection.",
+        "properties": {
+          "activation_id": {
+            "title": "Activation Id",
+            "type": "string"
+          },
+          "animated": {
+            "title": "Animated",
+            "type": "boolean"
+          },
+          "asset_count": {
+            "minimum": 0.0,
+            "title": "Asset Count",
+            "type": "integer"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "characters": {
+            "items": {
+              "$ref": "#/components/schemas/RuntimeCharacter"
+            },
+            "title": "Characters",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pack_id",
+          "slug",
+          "name",
+          "version",
+          "asset_count",
+          "animated",
+          "categories",
+          "characters",
+          "activation_id"
+        ],
+        "title": "RuntimeStickerPack",
+        "type": "object"
+      },
+      "RuntimeStickerPackListResponse": {
+        "description": "Return only collection-enabled packs for the authenticated workspace.",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RuntimeStickerPack"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "minimum": 0.0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "RuntimeStickerPackListResponse",
+        "type": "object"
+      },
+      "RuntimeStickerResolution": {
+        "description": "Return a short-lived generation-pinned URL for an approved private asset.",
+        "properties": {
+          "bytes": {
+            "exclusiveMinimum": 0.0,
+            "title": "Bytes",
+            "type": "integer"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "expires_in_seconds": {
+            "exclusiveMinimum": 0.0,
+            "title": "Expires In Seconds",
+            "type": "integer"
+          },
+          "media_type": {
+            "const": "image/webp",
+            "title": "Media Type",
+            "type": "string"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "pack_version": {
+            "title": "Pack Version",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Sha256",
+            "type": "string"
+          },
+          "sticker_id": {
+            "title": "Sticker Id",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "variant": {
+            "title": "Variant",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sticker_id",
+          "pack_id",
+          "pack_version",
+          "variant",
+          "media_type",
+          "bytes",
+          "sha256",
+          "url",
+          "expires_in_seconds",
+          "expires_at"
+        ],
+        "title": "RuntimeStickerResolution",
+        "type": "object"
+      },
+      "RuntimeStickerSearchResponse": {
+        "description": "Return deterministic metadata-ranked matches from enabled packs.",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RuntimeSticker"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "total": {
+            "minimum": 0.0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query",
+          "items",
+          "total"
+        ],
+        "title": "RuntimeStickerSearchResponse",
+        "type": "object"
+      },
+      "RuntimeStickerVariant": {
+        "description": "Describe an approved representation without leaking its private object key.",
+        "properties": {
+          "bytes": {
+            "exclusiveMinimum": 0.0,
+            "title": "Bytes",
+            "type": "integer"
+          },
+          "media_type": {
+            "const": "image/webp",
+            "title": "Media Type",
+            "type": "string"
+          },
+          "name": {
+            "enum": [
+              "animated",
+              "reduced_motion",
+              "small_80",
+              "small_100",
+              "small_160",
+              "thumbnail"
+            ],
+            "title": "Name",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "state",
+          "media_type",
+          "bytes"
+        ],
+        "title": "RuntimeStickerVariant",
+        "type": "object"
+      },
+      "RuntimeTypeaheadResponse": {
+        "description": "Return bounded prefix suggestions for one locale and collection.",
+        "properties": {
+          "locale": {
+            "title": "Locale",
+            "type": "string"
+          },
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/RuntimeTypeaheadSuggestion"
+            },
+            "title": "Suggestions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "query",
+          "locale",
+          "suggestions"
+        ],
+        "title": "RuntimeTypeaheadResponse",
+        "type": "object"
+      },
+      "RuntimeTypeaheadSuggestion": {
+        "description": "Represent one catalog-derived prefix and its matching asset count.",
+        "properties": {
+          "asset_count": {
+            "minimum": 1.0,
+            "title": "Asset Count",
+            "type": "integer"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "asset_count"
+        ],
+        "title": "RuntimeTypeaheadSuggestion",
+        "type": "object"
+      },
+      "RuntimeUsageCurrent": {
+        "description": "Expose pooled usage, included capacity, and settled overage for one month.",
+        "properties": {
+          "authorized_delivery_bytes": {
+            "minimum": 0.0,
+            "title": "Authorized Delivery Bytes",
+            "type": "integer"
+          },
+          "currency": {
+            "const": "USD",
+            "title": "Currency",
+            "type": "string"
+          },
+          "delivery_utilization_percent": {
+            "minimum": 0.0,
+            "title": "Delivery Utilization Percent",
+            "type": "number"
+          },
+          "included_delivery_bytes": {
+            "minimum": 0.0,
+            "title": "Included Delivery Bytes",
+            "type": "integer"
+          },
+          "included_operations": {
+            "minimum": 0.0,
+            "title": "Included Operations",
+            "type": "integer"
+          },
+          "month": {
+            "pattern": "^[0-9]{4}-[0-9]{2}$",
+            "title": "Month",
+            "type": "string"
+          },
+          "operations": {
+            "minimum": 0.0,
+            "title": "Operations",
+            "type": "integer"
+          },
+          "operations_utilization_percent": {
+            "minimum": 0.0,
+            "title": "Operations Utilization Percent",
+            "type": "number"
+          },
+          "overage_charged_cents": {
+            "minimum": 0.0,
+            "title": "Overage Charged Cents",
+            "type": "integer"
+          },
+          "remaining_delivery_bytes": {
+            "minimum": 0.0,
+            "title": "Remaining Delivery Bytes",
+            "type": "integer"
+          },
+          "remaining_operations": {
+            "minimum": 0.0,
+            "title": "Remaining Operations",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "healthy",
+              "approaching_limit",
+              "overage"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "month",
+          "operations",
+          "included_operations",
+          "remaining_operations",
+          "operations_utilization_percent",
+          "authorized_delivery_bytes",
+          "included_delivery_bytes",
+          "remaining_delivery_bytes",
+          "delivery_utilization_percent",
+          "overage_charged_cents",
+          "currency",
+          "status"
+        ],
+        "title": "RuntimeUsageCurrent",
+        "type": "object"
+      },
       "SandboxSessionResponse": {
         "properties": {
           "account_id": {
@@ -2485,6 +3490,421 @@
           "url"
         ],
         "title": "SourceUrl",
+        "type": "object"
+      },
+      "StickerClientTokenRequest": {
+        "description": "Request a bounded credential for exactly one active application collection.",
+        "properties": {
+          "collection_id": {
+            "pattern": "^stc_[0-9a-f]{32}$",
+            "title": "Collection Id",
+            "type": "string"
+          },
+          "expires_in_seconds": {
+            "default": 900,
+            "maximum": 3600.0,
+            "minimum": 60.0,
+            "title": "Expires In Seconds",
+            "type": "integer"
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "enum": [
+                    "packs:read",
+                    "stickers:search",
+                    "stickers:read",
+                    "assets:resolve"
+                  ],
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scopes"
+          }
+        },
+        "required": [
+          "collection_id"
+        ],
+        "title": "StickerClientTokenRequest",
+        "type": "object"
+      },
+      "StickerClientTokenResponse": {
+        "description": "Return a short-lived bearer credential without exposing its signing claims.",
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string"
+          },
+          "collection_id": {
+            "pattern": "^stc_[0-9a-f]{32}$",
+            "title": "Collection Id",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "expires_in": {
+            "maximum": 3600.0,
+            "minimum": 60.0,
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "scopes": {
+            "items": {
+              "enum": [
+                "packs:read",
+                "stickers:search",
+                "stickers:read",
+                "assets:resolve"
+              ],
+              "type": "string"
+            },
+            "title": "Scopes",
+            "type": "array"
+          },
+          "token_type": {
+            "const": "Bearer",
+            "title": "Token Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "expires_at",
+          "collection_id",
+          "scopes"
+        ],
+        "title": "StickerClientTokenResponse",
+        "type": "object"
+      },
+      "StickerCollection": {
+        "description": "Expose enabled packs while disabled binding history remains server-owned.",
+        "properties": {
+          "archived_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archived At"
+          },
+          "collection_id": {
+            "pattern": "^stc_[0-9a-f]{32}$",
+            "title": "Collection Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "packs": {
+            "items": {
+              "$ref": "#/components/schemas/StickerCollectionPackBinding"
+            },
+            "title": "Packs",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "archived"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "workspace_id": {
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "collection_id",
+          "workspace_id",
+          "name",
+          "status",
+          "packs",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "StickerCollection",
+        "type": "object"
+      },
+      "StickerCollectionCreate": {
+        "description": "Create one application-facing collection without changing pack billing.",
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "StickerCollectionCreate",
+        "type": "object"
+      },
+      "StickerCollectionListResponse": {
+        "description": "Wrap bounded workspace collections for future cursor pagination.",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StickerCollection"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "minimum": 0.0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "StickerCollectionListResponse",
+        "type": "object"
+      },
+      "StickerCollectionPackBinding": {
+        "description": "Represent one retained pack binding and its historical-access policy.",
+        "properties": {
+          "activation_id": {
+            "pattern": "^rpa_[0-9a-f]{32}$",
+            "title": "Activation Id",
+            "type": "string"
+          },
+          "binding_id": {
+            "pattern": "^spb_[0-9a-f]{32}$",
+            "title": "Binding Id",
+            "type": "string"
+          },
+          "collection_id": {
+            "pattern": "^stc_[0-9a-f]{32}$",
+            "title": "Collection Id",
+            "type": "string"
+          },
+          "disabled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disabled At"
+          },
+          "enabled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled At"
+          },
+          "first_enabled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Enabled At"
+          },
+          "historical_access": {
+            "enum": [
+              "preserve",
+              "revoke"
+            ],
+            "title": "Historical Access",
+            "type": "string"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "pack_name": {
+            "title": "Pack Name",
+            "type": "string"
+          },
+          "pack_slug": {
+            "title": "Pack Slug",
+            "type": "string"
+          },
+          "pack_version": {
+            "title": "Pack Version",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "enabled",
+              "disabled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "binding_id",
+          "collection_id",
+          "activation_id",
+          "pack_id",
+          "pack_slug",
+          "pack_name",
+          "pack_version",
+          "status",
+          "historical_access"
+        ],
+        "title": "StickerCollectionPackBinding",
+        "type": "object"
+      },
+      "StickerCollectionPackBindingListResponse": {
+        "description": "Return retained enabled and disabled pack bindings for audit tooling.",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StickerCollectionPackBinding"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "minimum": 0.0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "StickerCollectionPackBindingListResponse",
+        "type": "object"
+      },
+      "StickerCollectionPackRequest": {
+        "description": "Bind an already-paid hosted activation without creating another charge.",
+        "properties": {
+          "activation_id": {
+            "pattern": "^rpa_[0-9a-f]{32}$",
+            "title": "Activation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activation_id"
+        ],
+        "title": "StickerCollectionPackRequest",
+        "type": "object"
+      },
+      "StickerCollectionUpdate": {
+        "description": "Update reversible collection metadata or archive state.",
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "active",
+                  "archived"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "title": "StickerCollectionUpdate",
         "type": "object"
       },
       "SubtitleConfig": {
@@ -3219,6 +4639,12 @@
         "in": "header",
         "name": "X-Sandbox-Token",
         "type": "apiKey"
+      },
+      "StickerClientToken": {
+        "bearerFormat": "mrt_v1",
+        "description": "Short-lived token restricted to one sticker collection and an explicit runtime-operation allowlist.",
+        "scheme": "bearer",
+        "type": "http"
       }
     }
   },
@@ -3904,6 +5330,153 @@
         ]
       }
     },
+    "/v1/marketplace/packs": {
+      "get": {
+        "description": "Lists published MediaRuntime character packs and their separate download and hosted-runtime prices. No authentication is required.",
+        "operationId": "listMarketplacePacks",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "in": "query",
+            "name": "character",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Character"
+            }
+          },
+          {
+            "in": "query",
+            "name": "animated",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Animated"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplacePackListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [],
+        "summary": "List character packs",
+        "tags": [
+          "Marketplace"
+        ]
+      }
+    },
+    "/v1/marketplace/packs/{slug}": {
+      "get": {
+        "description": "Returns public merchandising, preview, format, and hosted-runtime allowance details for one published character pack. No authentication is required.",
+        "operationId": "getMarketplacePack",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9-]{1,127}$",
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplacePackDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [],
+        "summary": "Get a character pack",
+        "tags": [
+          "Marketplace"
+        ]
+      }
+    },
     "/v1/recipes": {
       "get": {
         "description": "Lists built-in recipes and active immutable recipe versions available to the caller's account.",
@@ -4213,6 +5786,966 @@
         ]
       }
     },
+    "/v1/sticker-collections": {
+      "get": {
+        "description": "Lists application collections owned by the authenticated workspace, including packs currently enabled for new use.",
+        "operationId": "listStickerCollections",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "include_archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Archived",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StickerCollectionListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "List sticker collections",
+        "tags": [
+          "Sticker Collections"
+        ]
+      },
+      "post": {
+        "description": "Creates non-billable application configuration. The collection begins empty and does not activate or purchase a pack.",
+        "operationId": "createStickerCollection",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StickerCollectionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StickerCollection"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "Create a sticker collection",
+        "tags": [
+          "Sticker Collections"
+        ]
+      }
+    },
+    "/v1/sticker-collections/{collection_id}": {
+      "delete": {
+        "description": "Stops new collection use while preserving binding history required by historical sticker references.",
+        "operationId": "archiveStickerCollection",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StickerCollection"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "Archive a sticker collection",
+        "tags": [
+          "Sticker Collections"
+        ]
+      },
+      "get": {
+        "description": "Returns one workspace-owned collection and the activated packs enabled for new use.",
+        "operationId": "getStickerCollection",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StickerCollection"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "Get a sticker collection",
+        "tags": [
+          "Sticker Collections"
+        ]
+      },
+      "patch": {
+        "description": "Renames, describes, archives, or restores a collection without changing hosted-pack billing.",
+        "operationId": "updateStickerCollection",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StickerCollectionUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StickerCollection"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "Update a sticker collection",
+        "tags": [
+          "Sticker Collections"
+        ]
+      }
+    },
+    "/v1/sticker-collections/{collection_id}/packs": {
+      "get": {
+        "description": "Lists enabled and disabled pack-binding history for one collection.",
+        "operationId": "listStickerCollectionPackBindings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StickerCollectionPackBindingListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "List collection pack bindings",
+        "tags": [
+          "Sticker Collections"
+        ]
+      },
+      "post": {
+        "description": "Enables an existing workspace pack activation in one collection without another charge.",
+        "operationId": "enableStickerCollectionActivation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StickerCollectionPackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StickerCollectionPackBinding"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "Enable an activated pack",
+        "tags": [
+          "Sticker Collections"
+        ]
+      }
+    },
+    "/v1/sticker-collections/{collection_id}/packs/{pack_id}": {
+      "delete": {
+        "description": "Removes a pack from new collection discovery while preserving exact historical asset resolution.",
+        "operationId": "disableStickerCollectionPack",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "pack_id",
+            "required": true,
+            "schema": {
+              "maxLength": 160,
+              "minLength": 2,
+              "title": "Pack Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StickerCollectionPackBinding"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "Disable a pack in a collection",
+        "tags": [
+          "Sticker Collections"
+        ]
+      },
+      "put": {
+        "description": "Enables an already-activated pack for new use in one collection. This configuration action is non-billable.",
+        "operationId": "enableStickerCollectionPack",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "pack_id",
+            "required": true,
+            "schema": {
+              "maxLength": 160,
+              "minLength": 2,
+              "title": "Pack Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StickerCollectionPackBinding"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "Enable a pack in a collection",
+        "tags": [
+          "Sticker Collections"
+        ]
+      }
+    },
+    "/v1/sticker-runtime/client-tokens": {
+      "post": {
+        "description": "Exchanges a server-side workspace API key for a short-lived bearer token restricted to one active collection and an explicit runtime-operation allowlist.",
+        "operationId": "createStickerRuntimeClientToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StickerClientTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StickerClientTokenResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "Create a scoped Sticker Runtime client token",
+        "tags": [
+          "Sticker Runtime"
+        ]
+      }
+    },
+    "/v1/sticker-runtime/usage/current": {
+      "get": {
+        "description": "Returns current-month operations and bytes authorized for signed delivery for the authenticated workspace.",
+        "operationId": "getCurrentStickerRuntimeUsage",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeUsageCurrent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "Get current sticker runtime usage",
+        "tags": [
+          "Sticker Runtime"
+        ]
+      }
+    },
+    "/v1/stickers/packs": {
+      "get": {
+        "description": "Lists published packs enabled for new use in the requested active collection.",
+        "operationId": "listRuntimeStickerPacks",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeStickerPackListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          },
+          {
+            "StickerClientToken": []
+          }
+        ],
+        "summary": "List enabled runtime packs",
+        "tags": [
+          "Sticker Runtime"
+        ]
+      }
+    },
+    "/v1/stickers/search": {
+      "get": {
+        "description": "Searches enabled pack metadata with bounded deterministic ranking for one collection.",
+        "operationId": "searchRuntimeStickers",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pack_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 160,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pack Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 80,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "in": "query",
+            "name": "animated",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Animated"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 24,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeStickerSearchResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          },
+          {
+            "StickerClientToken": []
+          }
+        ],
+        "summary": "Search hosted stickers",
+        "tags": [
+          "Sticker Runtime"
+        ]
+      }
+    },
+    "/v1/stickers/typeahead": {
+      "get": {
+        "description": "Returns bounded locale-aware prefix suggestions derived from packs enabled in one collection.",
+        "operationId": "typeaheadRuntimeStickers",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pack_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 160,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pack Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "required": false,
+            "schema": {
+              "default": "en",
+              "maxLength": 16,
+              "minLength": 2,
+              "title": "Locale",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 8,
+              "maximum": 20,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeTypeaheadResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          },
+          {
+            "StickerClientToken": []
+          }
+        ],
+        "summary": "Suggest hosted sticker terms",
+        "tags": [
+          "Sticker Runtime"
+        ]
+      }
+    },
+    "/v1/stickers/{sticker_id}": {
+      "get": {
+        "description": "Returns stable sticker metadata while its source pack remains enabled for new collection use.",
+        "operationId": "getRuntimeSticker",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sticker_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9.-]{1,159}$",
+              "title": "Sticker Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeSticker"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          },
+          {
+            "StickerClientToken": []
+          }
+        ],
+        "summary": "Get hosted sticker metadata",
+        "tags": [
+          "Sticker Runtime"
+        ]
+      }
+    },
+    "/v1/stickers/{sticker_id}/assets/{variant}": {
+      "get": {
+        "description": "Authorizes historical-safe delivery and returns a short-lived generation-pinned URL for one approved WebP variant.",
+        "operationId": "resolveRuntimeStickerVariant",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sticker_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9][a-z0-9.-]{1,159}$",
+              "title": "Sticker Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "variant",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z][a-z0-9_]{1,31}$",
+              "title": "Variant",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "collection_id",
+            "required": true,
+            "schema": {
+              "pattern": "^stc_[0-9a-f]{32}$",
+              "title": "Collection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeStickerResolution"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          },
+          {
+            "StickerClientToken": []
+          }
+        ],
+        "summary": "Resolve a hosted sticker asset",
+        "tags": [
+          "Sticker Runtime"
+        ]
+      }
+    },
     "/v1/upload-url": {
       "post": {
         "description": "Creates a short-lived upload target for local media bytes. Use an existing public or time-limited source URL instead when one is already available.",
@@ -4271,6 +6804,18 @@
     {
       "description": "Public capability and contract discovery.",
       "name": "Discovery"
+    },
+    {
+      "description": "Browse MediaRuntime character packs and their public previews.",
+      "name": "Marketplace"
+    },
+    {
+      "description": "Configure which activated character packs each application exposes.",
+      "name": "Sticker Collections"
+    },
+    {
+      "description": "Search, inspect, and resolve collection-scoped hosted stickers.",
+      "name": "Sticker Runtime"
     },
     {
       "description": "Optional upload targets for local media bytes.",

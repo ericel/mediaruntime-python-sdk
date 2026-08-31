@@ -4,6 +4,23 @@ from dataclasses import dataclass
 from typing import Any, Literal, TypedDict
 
 PrivacyDetector = Literal["face", "license_plate", "text"]
+StickerCollectionStatus = Literal["active", "archived"]
+StickerBindingStatus = Literal["enabled", "disabled"]
+StickerHistoricalAccess = Literal["preserve", "revoke"]
+StickerRuntimeScope = Literal[
+    "packs:read",
+    "stickers:search",
+    "stickers:read",
+    "assets:resolve",
+]
+StickerVariantName = Literal[
+    "animated",
+    "reduced_motion",
+    "small_80",
+    "small_100",
+    "small_160",
+    "thumbnail",
+]
 
 
 class _PrivacyRedactionOptional(TypedDict, total=False):
@@ -170,3 +187,194 @@ class WebhookEvent:
     recipe: RecipeAcknowledgement | None
     data: dict[str, Any]
     raw_body: bytes
+
+
+@dataclass(frozen=True, slots=True)
+class StickerCollectionPackBinding:
+    """A retained link between an application collection and a paid pack activation."""
+
+    binding_id: str
+    collection_id: str
+    activation_id: str
+    pack_id: str
+    pack_slug: str
+    pack_name: str
+    pack_version: str
+    status: StickerBindingStatus
+    historical_access: StickerHistoricalAccess
+    first_enabled_at: str | None
+    enabled_at: str | None
+    disabled_at: str | None
+    updated_at: str | None
+    raw: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class StickerCollection:
+    """Application-scoped runtime configuration with its currently enabled packs."""
+
+    collection_id: str
+    workspace_id: str
+    name: str
+    description: str
+    status: StickerCollectionStatus
+    packs: list[StickerCollectionPackBinding]
+    created_at: str
+    archived_at: str | None
+    updated_at: str
+    raw: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class StickerCollectionPage:
+    """Bounded collection results returned for one workspace."""
+
+    items: list[StickerCollection]
+    total: int
+
+
+@dataclass(frozen=True, slots=True)
+class StickerCollectionPackBindingPage:
+    """Enabled and disabled binding history for one collection."""
+
+    items: list[StickerCollectionPackBinding]
+    total: int
+
+
+@dataclass(frozen=True, slots=True)
+class StickerRuntimeCharacter:
+    """A character family represented in an enabled runtime pack."""
+
+    id: str
+    name: str
+    raw: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class StickerRuntimePack:
+    """Published pack metadata available for new use in one collection."""
+
+    pack_id: str
+    slug: str
+    name: str
+    version: str
+    asset_count: int
+    animated: bool
+    categories: list[str]
+    characters: list[StickerRuntimeCharacter]
+    activation_id: str
+    raw: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class StickerRuntimePackPage:
+    """Collection-enabled runtime packs and their reported total."""
+
+    items: list[StickerRuntimePack]
+    total: int
+
+
+@dataclass(frozen=True, slots=True)
+class StickerRuntimeVariant:
+    """Approved private representation metadata without its storage object key."""
+
+    name: StickerVariantName
+    state: str
+    media_type: Literal["image/webp"]
+    bytes: int
+    raw: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class StickerRuntimeSticker:
+    """Stable sticker metadata suitable for persistence in an application record."""
+
+    sticker_id: str
+    semantic_id: str
+    pack_id: str
+    pack_slug: str
+    pack_version: str
+    label: str
+    emoji: str | None
+    category: str | None
+    keywords: list[str]
+    animated: bool
+    variants: list[StickerRuntimeVariant]
+    score: int | None
+    raw: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class StickerRuntimeSearchResult:
+    """Deterministically ranked sticker matches for a normalized query."""
+
+    query: str
+    items: list[StickerRuntimeSticker]
+    total: int
+
+
+@dataclass(frozen=True, slots=True)
+class StickerRuntimeTypeaheadSuggestion:
+    """A catalog-derived search suggestion and its matching asset count."""
+
+    text: str
+    asset_count: int
+    raw: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class StickerRuntimeTypeaheadResult:
+    """Locale-aware suggestions for a normalized prefix."""
+
+    query: str
+    locale: str
+    suggestions: list[StickerRuntimeTypeaheadSuggestion]
+
+
+@dataclass(frozen=True, slots=True)
+class StickerRuntimeAsset:
+    """A short-lived, integrity-pinned delivery authorization for one WebP variant."""
+
+    sticker_id: str
+    pack_id: str
+    pack_version: str
+    variant: str
+    media_type: Literal["image/webp"]
+    bytes: int
+    sha256: str
+    url: str
+    expires_in_seconds: int
+    expires_at: str
+    raw: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class StickerRuntimeClientToken:
+    """Short-lived bearer credential restricted to one collection and scope set."""
+
+    access_token: str
+    token_type: Literal["Bearer"]
+    expires_in: int
+    expires_at: str
+    collection_id: str
+    scopes: list[StickerRuntimeScope]
+    raw: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class StickerRuntimeUsage:
+    """Current workspace operation and authorized-delivery usage totals."""
+
+    month: str
+    operations: int
+    included_operations: int
+    remaining_operations: int
+    operations_utilization_percent: float
+    authorized_delivery_bytes: int
+    included_delivery_bytes: int
+    remaining_delivery_bytes: int
+    delivery_utilization_percent: float
+    overage_charged_cents: int
+    currency: Literal["USD"]
+    status: Literal["healthy", "approaching_limit", "overage"]
+    raw: dict[str, Any]

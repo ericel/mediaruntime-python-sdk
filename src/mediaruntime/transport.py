@@ -191,6 +191,7 @@ class Transport:
         query: Mapping[str, Any] | None = None,
         headers: Mapping[str, str] | None = None,
         authenticated: bool = True,
+        bearer_token: str | None = None,
         retry: RetryMode = "safe",
         operation: str = "request",
     ) -> Any:
@@ -199,7 +200,18 @@ class Transport:
             "Accept": "application/json",
             "User-Agent": f"mediaruntime-python/{VERSION}",
         }
-        if authenticated:
+        if bearer_token is not None:
+            # A scoped Sticker Runtime token replaces API-key authentication. Keeping
+            # this choice in the transport prevents either credential leaking together.
+            normalized_token = bearer_token.strip()
+            if not normalized_token:
+                raise AuthenticationError(
+                    "A Sticker Runtime client token is required",
+                    status=401,
+                    code="authentication_error",
+                )
+            request_headers["Authorization"] = f"Bearer {normalized_token}"
+        elif authenticated:
             if not self.api_key:
                 raise AuthenticationError(
                     "A MediaRuntime API key is required",

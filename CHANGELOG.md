@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## Unreleased
+## 1.3.0 - 2026-08-31
 
 - Add typed `privacy_redaction` controls for the Premium still-image Preview; video and
   animated-image redaction remain unavailable and are rejected by the gateway and engine.
@@ -11,11 +11,16 @@ All notable changes to this project are documented here.
 - Document and preserve the bounded Audiogram composition controls, caption-free poster,
   and complete bundle inventory.
 - Add typed `jobs.get_code_detections()` access for `code_detect_v1` reports.
-
 - Add typed `jobs.get_compatibility_report()` access to the versioned
   `compatibility_report_v1` sidecar.
 - Document and regression-test direct `contact_sheet_v1` request mappings for numbered
   composite sheets and timestamp metadata.
+- Add typed Hosted Sticker Runtime collection management, collection-bound catalog,
+  search, typeahead, stable metadata, signed asset resolution, and usage APIs.
+- Add short-lived scoped client-token issuance and bearer-authenticated runtime reads
+  while retaining workspace API keys as the default trusted-server credential.
+- Refresh the vendored public OpenAPI and conformance snapshots from the current
+  gateway contract.
 
 ## 1.2.0 - 2026-08-19
 

@@ -141,6 +141,55 @@ def test_six_typed_aliases_match_the_gateway_contract() -> None:
     assert seen["outputs"] == list(get_args(OutputAlias))
 
 
+def test_sticker_runtime_routes_and_authentication_match_the_gateway_contract() -> None:
+    """Pin every SDK-backed Sticker Runtime operation and its credential boundary."""
+
+    openapi = json.loads((CONTRACT_DIR / "openapi.json").read_text(encoding="utf-8"))
+    paths = openapi["paths"]
+    api_key_only = {
+        ("/v1/sticker-collections", "get"),
+        ("/v1/sticker-collections", "post"),
+        ("/v1/sticker-collections/{collection_id}", "get"),
+        ("/v1/sticker-collections/{collection_id}", "patch"),
+        ("/v1/sticker-collections/{collection_id}", "delete"),
+        ("/v1/sticker-collections/{collection_id}/packs", "get"),
+        ("/v1/sticker-collections/{collection_id}/packs", "post"),
+        ("/v1/sticker-collections/{collection_id}/packs/{pack_id}", "put"),
+        ("/v1/sticker-collections/{collection_id}/packs/{pack_id}", "delete"),
+        ("/v1/sticker-runtime/client-tokens", "post"),
+        ("/v1/sticker-runtime/usage/current", "get"),
+    }
+    runtime_reads = {
+        ("/v1/stickers/packs", "get"),
+        ("/v1/stickers/search", "get"),
+        ("/v1/stickers/typeahead", "get"),
+        ("/v1/stickers/{sticker_id}", "get"),
+        ("/v1/stickers/{sticker_id}/assets/{variant}", "get"),
+    }
+
+    assert all(
+        paths[path][method]["security"] == [{"ProductionApiKey": []}]
+        for path, method in api_key_only
+    )
+    assert all(
+        paths[path][method]["security"] == [{"ProductionApiKey": []}, {"StickerClientToken": []}]
+        for path, method in runtime_reads
+    )
+
+    # Keep client scope literals synchronized with both token request and response schemas.
+    schemas = openapi["components"]["schemas"]
+    expected_scopes = {
+        "packs:read",
+        "stickers:search",
+        "stickers:read",
+        "assets:resolve",
+    }
+    request_scope = schemas["StickerClientTokenRequest"]["properties"]["scopes"]
+    response_scope = schemas["StickerClientTokenResponse"]["properties"]["scopes"]
+    assert set(request_scope["anyOf"][0]["items"]["enum"]) == expected_scopes
+    assert set(response_scope["items"]["enum"]) == expected_scopes
+
+
 def test_hosted_recipe_reference_and_acknowledgement_match_contract() -> None:
     hosted = _contract()["hosted_recipes"]
     seen: dict[str, Any] = {}

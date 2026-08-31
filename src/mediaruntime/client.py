@@ -8,6 +8,8 @@ import httpx
 from .capabilities import CapabilitiesClient
 from .jobs import JobsClient
 from .recipes import RecipesClient
+from .sticker_collections import StickerCollectionsClient
+from .stickers import StickersClient
 from .transport import Transport
 from .uploads import UploadsClient
 from .watermark_logo import WatermarkLogoClient
@@ -45,6 +47,10 @@ class MediaRuntime:
         self.recipes = RecipesClient(self._transport)
         self.capabilities = CapabilitiesClient(self._transport)
         self.watermark_logo = WatermarkLogoClient(self._transport)
+        self.stickers = StickersClient(self._transport)
+        # Keep the lower-level collection resource available while `stickers` offers
+        # the cohesive management and collection-bound runtime workflow.
+        self.sticker_collections = StickerCollectionsClient(self._transport)
         self.webhooks = WebhooksClient(webhook_secret or os.getenv("MEDIARUNTIME_WEBHOOK_SECRET"))
 
     def close(self) -> None:
