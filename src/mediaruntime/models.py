@@ -23,6 +23,53 @@ StickerVariantName = Literal[
 ]
 
 
+class ClipTranscriptSegment(TypedDict):
+    """Times stay on the original source timeline, including when rendering a clip."""
+
+    start_time_sec: float
+    end_time_sec: float
+    text: str
+
+
+class _ClipOptional(TypedDict, total=False):
+    layout: Literal["original", "vertical_blur"]
+    burn_captions: bool
+    transcript: list[ClipTranscriptSegment]
+
+
+class ClipOptions(_ClipOptional):
+    start_time_sec: float
+    duration_sec: float
+
+
+class ClipAnalysisOptions(TypedDict, total=False):
+    min_duration_sec: float
+    max_duration_sec: float
+    max_candidates: int
+    keywords: list[str]
+    transcript: list[ClipTranscriptSegment]
+
+
+ClipEmptyReason = Literal[
+    "no_speech",
+    "no_keyword_match",
+    "no_matching_ranges",
+    "source_too_short",
+]
+
+
+@dataclass(frozen=True, slots=True)
+class ClipCandidatesResult:
+    schema_version: int
+    source_duration_sec: float
+    method: str
+    transcript_source: str
+    transcript: list[dict[str, Any]]
+    candidates: list[dict[str, Any]]
+    # A default keeps existing direct constructions and older stored reports valid.
+    empty_reason: ClipEmptyReason | None = None
+
+
 class _PrivacyRedactionOptional(TypedDict, total=False):
     style: Literal["blur", "pixelate", "solid"]
     failure_mode: Literal["fail_closed", "report_only"]

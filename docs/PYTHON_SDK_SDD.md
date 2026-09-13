@@ -18,7 +18,7 @@ billing, tier, preset, and compatibility policy remain server-owned.
 
 ```text
 MediaRuntime
-├── jobs.create/get/list/wait/get_moderation/get_media_report/get_compatibility_report/retry_webhook
+├── jobs.create/get/list/wait/get_moderation/get_media_report/get_compatibility_report/get_clip_candidates/retry_webhook
 ├── uploads.create_target/upload_file
 ├── capabilities.retrieve
 ├── recipes.list/get/create/create_version/archive
@@ -113,3 +113,14 @@ reproducible.
 - Invocation-idempotency tests pin one key across lost-response, in-progress, `429`, and
   `5xx` retries; a fresh key for a later call; caller-key override; and terminal conflicts.
 - Package/repository ownership and PyPI trusted publishing are configured.
+
+
+## Assisted clipping (1.4.0)
+
+`ClipOptions` and `ClipAnalysisOptions` describe the gateway's source-timed segment
+arrays. `jobs.get_clip_candidates()` validates the versioned response and returns an
+allowlisted `ClipCandidatesResult`, including optional `ClipEmptyReason` values.
+An omitted or null `empty_reason` becomes `None`, preserving older stored reports
+and existing dataclass constructions. Candidate analysis uses existing Whisper only
+without a supplied transcript; manual rendering never requires Whisper. See the
+[clipping guide](clipping.md) for empty outcomes, caption reuse, limits, and examples.

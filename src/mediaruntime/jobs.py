@@ -1,17 +1,20 @@
 from __future__ import annotations
 
+import math
 import random
 import re
 import time
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, NoReturn, cast
 from urllib.parse import quote
 from uuid import uuid4
 
 from ._utils import bool_or_none, int_or_none, object_dict, string_list, string_or_none
 from .errors import JobWaitTimeoutError, ValidationError
 from .models import (
+    ClipCandidatesResult,
+    ClipEmptyReason,
     CodeDetectionResult,
     CompatibilityReportResult,
     JobDetails,
@@ -36,6 +39,138 @@ OutputAlias = Literal[
     "image.web",
 ]
 RECIPE_REFERENCE_RE = re.compile(r"^[a-z][a-z0-9-]{2,63}(?:@[1-9][0-9]*)?$")
+
+
+def _parse_clip_candidates(value: Any) -> ClipCandidatesResult:
+    """Validate source timing before a retrieved plan can be reused in a paid job."""
+
+    def invalid(field: str) -> NoReturn:
+        # Never put transcript text or unknown report fields into exception messages.
+        raise ValidationError(
+            f"Invalid clip candidate response: {field}",
+            status=502,
+            code="invalid_clip_plan",
+            field=f"clip_candidates.{field}",
+        )
+
+    def number(value: Any, field: str, minimum: float, maximum: float) -> float:
+        if (
+            type(value) not in (int, float)
+            or not minimum <= value <= maximum
+            or not math.isfinite(value)
+        ):
+            invalid(field)
+        return float(value)
+
+    data = object_dict(value)
+    if type(data.get("schema_version")) is not int or data["schema_version"] != 1:
+        invalid("schema_version")
+    if "version" in data and (type(data["version"]) is not int or data["version"] != 1):
+        invalid("version")
+    if "preset" in data and data["preset"] != "clip_candidates_v1":
+        invalid("preset")
+    source_duration = number(data.get("source_duration_sec"), "source_duration_sec", 0, 604800)
+    if source_duration <= 0:
+        invalid("source_duration_sec")
+    if data.get("method") != "transcript_heuristics_v1":
+        invalid("method")
+    if data.get("transcript_source") not in ("supplied", "whisper"):
+        invalid("transcript_source")
+    if not isinstance(data.get("transcript"), list) or len(data["transcript"]) > 2000:
+        invalid("transcript")
+    if not isinstance(data.get("candidates"), list) or len(data["candidates"]) > 20:
+        invalid("candidates")
+
+    previous_start = -1.0
+    text_bytes = 0
+    transcript = []
+    for index, raw in enumerate(data["transcript"]):
+        segment = object_dict(raw)
+        field = f"transcript[{index}]"
+        start = number(segment.get("start_time_sec"), f"{field}.start_time_sec", 0, 604800)
+        # Match the native allowance for the final Whisper cue rounded past the
+        # duration, while preserving its source timestamp for later intersection.
+        end = number(
+            segment.get("end_time_sec"),
+            f"{field}.end_time_sec",
+            0,
+            min(604800, source_duration + 0.1),
+        )
+        if end <= start or start < previous_start:
+            invalid(field)
+        text = segment.get("text")
+        if not isinstance(text, str) or not text.strip():
+            invalid(f"{field}.text")
+        try:
+            size = len(text.encode("utf-8"))
+        except UnicodeEncodeError:
+            invalid(f"{field}.text")
+        text_bytes += size
+        if size > 2000 or text_bytes > 256 * 1024:
+            invalid(f"{field}.text")
+        previous_start = start
+        transcript.append({"start_time_sec": start, "end_time_sec": end, "text": text})
+
+    candidates = []
+    for index, raw in enumerate(data["candidates"]):
+        candidate = object_dict(raw)
+        field = f"candidates[{index}]"
+        start = number(candidate.get("start_time_sec"), f"{field}.start_time_sec", 0, 604800)
+        duration = number(candidate.get("duration_sec"), f"{field}.duration_sec", 0, 300)
+        if duration <= 0 or start + duration > source_duration + 0.1:
+            invalid(field)
+        text = candidate.get("text")
+        if not isinstance(text, str) or len(text) > 256 * 1024:
+            invalid(f"{field}.text")
+        score = number(candidate.get("score"), f"{field}.score", 0, 1.7976931348623157e308)
+        reasons = candidate.get("reasons")
+        if (
+            not isinstance(reasons, list)
+            or len(reasons) > 20
+            or any(not isinstance(reason, str) for reason in reasons)
+        ):
+            invalid(f"{field}.reasons")
+        candidate_id = candidate.get("id")
+        if candidate_id is not None and (
+            not isinstance(candidate_id, str) or len(candidate_id) > 128
+        ):
+            invalid(f"{field}.id")
+        candidates.append(
+            {
+                "id": candidate_id,
+                "start_time_sec": start,
+                "duration_sec": duration,
+                "text": text,
+                "score": score,
+                "reasons": list(reasons),
+            }
+        )
+
+    # Older reports omit this field. A supplied reason must still be a recognized
+    # empty outcome without coercing arbitrary server data into the public type.
+    empty_reason = data.get("empty_reason")
+    if empty_reason is not None and (
+        not isinstance(empty_reason, str)
+        or empty_reason
+        not in (
+            "no_speech",
+            "no_keyword_match",
+            "no_matching_ranges",
+            "source_too_short",
+        )
+    ):
+        invalid("empty_reason")
+
+    # Construct an allowlist instead of retaining arbitrary nested report fields.
+    return ClipCandidatesResult(
+        schema_version=1,
+        source_duration_sec=source_duration,
+        method=data["method"],
+        transcript_source=data["transcript_source"],
+        transcript=transcript,
+        candidates=candidates,
+        empty_reason=cast(ClipEmptyReason | None, empty_reason),
+    )
 
 
 def _recipe_acknowledgement(value: Any) -> RecipeAcknowledgement | None:
@@ -371,6 +506,12 @@ class JobsClient:
             else None,
             download_url=string_or_none(data.get("download_url")),
             note=string_or_none(data.get("note")),
+        )
+
+    def get_clip_candidates(self, job_id: str) -> ClipCandidatesResult:
+        """Fetch the editable plan. Reuse its transcript to render without another ASR pass."""
+        return _parse_clip_candidates(
+            self._transport.request("GET", f"/jobs/{_job_id(job_id)}/clip-candidates", retry="safe")
         )
 
     def get_code_detections(self, job_id: str) -> CodeDetectionResult:

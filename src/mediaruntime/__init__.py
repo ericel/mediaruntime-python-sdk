@@ -18,6 +18,11 @@ from .errors import (
 from .jobs import Job, JobsClient, OutputAlias
 from .models import (
     Capabilities,
+    ClipAnalysisOptions,
+    ClipCandidatesResult,
+    ClipEmptyReason,
+    ClipOptions,
+    ClipTranscriptSegment,
     CodeDetectionResult,
     CompatibilityReportResult,
     HostedRecipe,
@@ -63,6 +68,11 @@ from .webhooks import WebhooksClient
 __all__ = [
     "AuthenticationError",
     "Capabilities",
+    "ClipAnalysisOptions",
+    "ClipCandidatesResult",
+    "ClipEmptyReason",
+    "ClipOptions",
+    "ClipTranscriptSegment",
     "CodeDetectionResult",
     "CompatibilityReportResult",
     "IdempotencyConflictError",

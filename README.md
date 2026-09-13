@@ -2,7 +2,12 @@
 
 Official synchronous Python client for the MediaRuntime asynchronous media API.
 
-Status: production/stable `1.3.0`, published on PyPI with GitHub trusted publishing.
+Version `1.4.0` adds [assisted clipping](docs/clipping.md): retrieve editable plans
+and render reviewed ranges with reusable source-timed captions.
+
+Clipping requires a matching gateway/engine deployment supporting
+`clip_candidates_v1` and `video_clip_v1`. Client package publication does not deploy
+server features; verify their availability through the API capability catalog.
 
 The documented `1.x` public API follows semantic versioning. Breaking changes to public
 imports, arguments, exceptions, or documented response projections require a new major

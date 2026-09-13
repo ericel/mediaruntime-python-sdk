@@ -336,6 +336,219 @@
         "title": "CapabilitiesResponse",
         "type": "object"
       },
+      "ClipAnalysisConfig": {
+        "additionalProperties": false,
+        "properties": {
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Keywords",
+            "type": "array"
+          },
+          "max_candidates": {
+            "default": 5,
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Max Candidates",
+            "type": "integer"
+          },
+          "max_duration_sec": {
+            "default": 60,
+            "maximum": 300.0,
+            "minimum": 1.0,
+            "title": "Max Duration Sec",
+            "type": "number"
+          },
+          "min_duration_sec": {
+            "default": 15,
+            "maximum": 300.0,
+            "minimum": 1.0,
+            "title": "Min Duration Sec",
+            "type": "number"
+          },
+          "transcript": {
+            "items": {
+              "$ref": "#/components/schemas/ClipTranscriptSegment"
+            },
+            "maxItems": 2000,
+            "title": "Transcript",
+            "type": "array"
+          }
+        },
+        "title": "ClipAnalysisConfig",
+        "type": "object"
+      },
+      "ClipCandidate": {
+        "description": "Public allowlist: report internals cannot become API fields by accident.",
+        "properties": {
+          "duration_sec": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 300.0,
+            "title": "Duration Sec",
+            "type": "number"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Reasons",
+            "type": "array"
+          },
+          "score": {
+            "minimum": 0.0,
+            "title": "Score",
+            "type": "number"
+          },
+          "start_time_sec": {
+            "maximum": 604800.0,
+            "minimum": 0.0,
+            "title": "Start Time Sec",
+            "type": "number"
+          },
+          "text": {
+            "maxLength": 262144,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_time_sec",
+          "duration_sec",
+          "text",
+          "score",
+          "reasons"
+        ],
+        "title": "ClipCandidate",
+        "type": "object"
+      },
+      "ClipCandidatesResponse": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/ClipCandidate"
+            },
+            "maxItems": 20,
+            "title": "Candidates",
+            "type": "array"
+          },
+          "empty_reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "no_speech",
+                  "no_keyword_match",
+                  "no_matching_ranges",
+                  "source_too_short"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Empty Reason"
+          },
+          "method": {
+            "const": "transcript_heuristics_v1",
+            "default": "transcript_heuristics_v1",
+            "title": "Method",
+            "type": "string"
+          },
+          "preset": {
+            "const": "clip_candidates_v1",
+            "default": "clip_candidates_v1",
+            "title": "Preset",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "source_duration_sec": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 604800.0,
+            "title": "Source Duration Sec",
+            "type": "number"
+          },
+          "transcript": {
+            "items": {
+              "$ref": "#/components/schemas/ClipTranscriptSegment"
+            },
+            "maxItems": 2000,
+            "title": "Transcript",
+            "type": "array"
+          },
+          "transcript_source": {
+            "enum": [
+              "supplied",
+              "whisper"
+            ],
+            "title": "Transcript Source",
+            "type": "string"
+          },
+          "version": {
+            "const": 1,
+            "default": 1,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "source_duration_sec",
+          "transcript_source",
+          "transcript",
+          "candidates"
+        ],
+        "title": "ClipCandidatesResponse",
+        "type": "object"
+      },
+      "ClipTranscriptSegment": {
+        "additionalProperties": false,
+        "properties": {
+          "end_time_sec": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 604800.0,
+            "title": "End Time Sec",
+            "type": "number"
+          },
+          "start_time_sec": {
+            "maximum": 604800.0,
+            "minimum": 0.0,
+            "title": "Start Time Sec",
+            "type": "number"
+          },
+          "text": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_time_sec",
+          "end_time_sec",
+          "text"
+        ],
+        "title": "ClipTranscriptSegment",
+        "type": "object"
+      },
       "CompletedWebhook": {
         "allOf": [
           {
@@ -861,6 +1074,81 @@
           "format"
         ],
         "title": "ImageRendition",
+        "type": "object"
+      },
+      "JobArtifactInfo": {
+        "description": "One directly downloadable, client-safe output from a completed job.",
+        "properties": {
+          "artifact_id": {
+            "description": "Opaque generation-bound id used by the artifact download endpoint.",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "bundle_path": {
+            "description": "Stable path for the same file inside the canonical ZIP bundle.",
+            "title": "Bundle Path",
+            "type": "string"
+          },
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "size_bytes": {
+            "minimum": 0.0,
+            "title": "Size Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "filename",
+          "bundle_path",
+          "kind",
+          "content_type",
+          "size_bytes"
+        ],
+        "title": "JobArtifactInfo",
+        "type": "object"
+      },
+      "JobArtifactsResponse": {
+        "description": "Allowlisted individual outputs; storage bucket/object names stay private.",
+        "properties": {
+          "artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/JobArtifactInfo"
+            },
+            "title": "Artifacts",
+            "type": "array"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Job retention boundary after which artifact delivery is refused.",
+            "title": "Expires At"
+          },
+          "job_id": {
+            "title": "Job Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ],
+        "title": "JobArtifactsResponse",
         "type": "object"
       },
       "JobBillingInfo": {
@@ -4115,6 +4403,26 @@
               }
             ]
           },
+          "clip": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VideoClipConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "clip_analysis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClipAnalysisConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "contact_sheet": {
             "anyOf": [
               {
@@ -4337,6 +4645,51 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "VideoClipConfig": {
+        "additionalProperties": false,
+        "properties": {
+          "burn_captions": {
+            "default": false,
+            "title": "Burn Captions",
+            "type": "boolean"
+          },
+          "duration_sec": {
+            "maximum": 300.0,
+            "minimum": 0.1,
+            "title": "Duration Sec",
+            "type": "number"
+          },
+          "layout": {
+            "default": "original",
+            "enum": [
+              "original",
+              "vertical_blur"
+            ],
+            "title": "Layout",
+            "type": "string"
+          },
+          "start_time_sec": {
+            "maximum": 604800.0,
+            "minimum": 0.0,
+            "title": "Start Time Sec",
+            "type": "number"
+          },
+          "transcript": {
+            "items": {
+              "$ref": "#/components/schemas/ClipTranscriptSegment"
+            },
+            "maxItems": 2000,
+            "title": "Transcript",
+            "type": "array"
+          }
+        },
+        "required": [
+          "start_time_sec",
+          "duration_sec"
+        ],
+        "title": "VideoClipConfig",
         "type": "object"
       },
       "VideoOptions": {
@@ -4645,6 +4998,12 @@
         "description": "Short-lived token restricted to one sticker collection and an explicit runtime-operation allowlist.",
         "scheme": "bearer",
         "type": "http"
+      },
+      "WorkspaceBearer": {
+        "bearerFormat": "Firebase ID token",
+        "description": "Firebase ID token for a signed-in first-party workspace client. The gateway resolves and rechecks active account membership.",
+        "scheme": "bearer",
+        "type": "http"
       }
     }
   },
@@ -4653,7 +5012,13 @@
     "url": "https://mediaruntime.com/docs"
   },
   "info": {
-    "description": "Asynchronous media processing for video, audio, and images.",
+    "contact": {
+      "email": "support@mediaruntime.com",
+      "name": "MediaRuntime support",
+      "url": "https://mediaruntime.com/contact"
+    },
+    "description": "Production API for asynchronous video, audio, and image processing, plus collection-scoped sticker discovery and approved asset delivery. See https://mediaruntime.com/docs for media workflows and https://mediaruntime.com/docs/stickers for the Stickers API.",
+    "termsOfService": "https://mediaruntime.com/legal#terms",
     "title": "MediaRuntime API",
     "version": "1.0.0"
   },
@@ -5008,6 +5373,189 @@
         ]
       }
     },
+    "/v1/jobs/{job_id}/artifacts": {
+      "get": {
+        "description": "Lists client-safe standalone files from one owned completed job. Storage locations and worker attempt paths are never exposed.",
+        "operationId": "listJobArtifacts",
+        "parameters": [
+          {
+            "description": "The completed job whose outputs to list",
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "description": "The completed job whose outputs to list",
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobArtifactsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Authentication is missing or invalid."
+          },
+          "404": {
+            "description": "The job or its retained artifacts were not found."
+          },
+          "409": {
+            "description": "The job has not completed."
+          },
+          "410": {
+            "description": "The job's artifact retention period has elapsed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "description": "Artifact storage is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          },
+          {
+            "WorkspaceBearer": []
+          }
+        ],
+        "summary": "List individual job artifacts",
+        "tags": [
+          "Job Results"
+        ]
+      }
+    },
+    "/v1/jobs/{job_id}/artifacts/{artifact_id}/download": {
+      "get": {
+        "description": "Reauthorizes the caller and redirects to a short-lived, generation-pinned URL for the selected existing GCS object.",
+        "operationId": "downloadJobArtifact",
+        "parameters": [
+          {
+            "description": "The completed job that owns the artifact",
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "description": "The completed job that owns the artifact",
+              "title": "Job Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Opaque artifact id returned by the artifact listing endpoint",
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "description": "Opaque artifact id returned by the artifact listing endpoint",
+              "maxLength": 32,
+              "minLength": 32,
+              "pattern": "^[0-9a-f]{32}$",
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return a redirect by default; false returns a signed download_url for browser media players.",
+            "in": "query",
+            "name": "redirect",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "Return a redirect by default; false returns a signed download_url for browser media players.",
+              "title": "Redirect",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "download_url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "download_url"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "With redirect=false, a short-lived generation-pinned URL. Do not persist it or forward API credentials to storage."
+          },
+          "307": {
+            "description": "Redirect to a short-lived signed URL for this artifact.",
+            "headers": {
+              "Location": {
+                "description": "Generation-pinned signed storage URL.",
+                "schema": {
+                  "format": "uri",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is missing or invalid."
+          },
+          "404": {
+            "description": "The job or artifact was not found."
+          },
+          "409": {
+            "description": "The job has not completed."
+          },
+          "410": {
+            "description": "The job's artifact retention period has elapsed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "description": "Artifact storage is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          },
+          {
+            "WorkspaceBearer": []
+          }
+        ],
+        "summary": "Download an individual job artifact",
+        "tags": [
+          "Job Results"
+        ]
+      }
+    },
     "/v1/jobs/{job_id}/bundle": {
       "get": {
         "description": "Validates the job-scoped delivery token and redirects to a short-lived signed URL for the canonical ZIP output bundle.",
@@ -5077,6 +5625,65 @@
         "summary": "Download a job output bundle",
         "tags": [
           "Job Results"
+        ]
+      }
+    },
+    "/v1/jobs/{job_id}/clip-candidates": {
+      "get": {
+        "description": "Returns the versioned transcript and candidate ranges produced by clip_candidates_v1 for an owned completed job. Scores explain transcript heuristics; they do not predict engagement. Reuse source-timed transcript cues with video_clip_v1 to render selected ranges without repeating analysis. The plan follows the job's retention period.",
+        "operationId": "getClipCandidates",
+        "parameters": [
+          {
+            "description": "The completed analysis job that owns the clip plan",
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "description": "The completed analysis job that owns the clip plan",
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClipCandidatesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "The job or retained clip plan was not found."
+          },
+          "409": {
+            "description": "The job has not completed."
+          },
+          "410": {
+            "description": "The job's artifact retention period has elapsed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ProductionApiKey": []
+          }
+        ],
+        "summary": "Get a reviewed-source clip plan",
+        "tags": [
+          "Media Analysis"
         ]
       }
     },
